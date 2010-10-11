@@ -30,6 +30,7 @@ class LayerTest(unittest.TestCase):
         self.mox.stubs.Set(lmc, 'LayersManagerClient', getLmc)
 
     def tearDown(self):
+        self.mox.VerifyAll()
         self.mox.ResetAll()
         self.mox.UnsetStubs()
         lmc._cms_client = None
@@ -45,11 +46,20 @@ class LayerTest(unittest.TestCase):
     def test_create_layer(self):
         self.mock_LayersManagerClient.Create('layer', 0, name=TEST_LAYER_NAME, world='mars').AndReturn(TEST_LAYER_ID)
         self.mox.ReplayAll()
-        layer = Layer('test_layer')
+
+        layer = Layer(name='test_layer')
+        self.assertRaises(MissingPropertyError, layer.save) # world is a required argument
+
+        layer = Layer(name='test_layer', world='mars')
+        layer.save()
         self.assertEquals(layer.id, TEST_LAYER_ID)
         self.assertEquals( layer.layer_id, TEST_LAYER_ID)
     
-    def test_lmc_tests(self):
+    def _test_lmc_tests(self): # this test is disabled
+        """ 
+            This is just to make sure the mock LayersManagerClient constructor 
+            always yields the same object.
+        """
         a = lmc.LayersManagerClient('fee','fi','fo')
         self.assertEqual(a, self.mock_LayersManagerClient)
         a = lmc.LayersManagerClient('fee','fi','fo')
@@ -63,7 +73,9 @@ class LayerTest(unittest.TestCase):
         self.mock_LayersManagerClient.Update('layer', 1, **newprops)
         self.mox.ReplayAll()
 
-        layer = Layer('test_layer')
+        layer = Layer(name='test_layer', world='mars')
+        self.assertEqual(layer.dynamic_balloons, None) # Trying to access an unset property before the layer is saved.
+        layer.save()
         mox.Replay(self.mock_LayersManagerClient)
 
         # RETRIEVE PROPERTIES
@@ -76,6 +88,7 @@ class LayerTest(unittest.TestCase):
         layer.save()
         self.assertEqual(layer.description, LOREM_IPSUM)
         
+        #TODO: Test to ensure omitting a required property raises a MissingPropertyError
 
 if __name__ == '__main__':
     unittest.main()

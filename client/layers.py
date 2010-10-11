@@ -8,6 +8,8 @@ def get_default_client():
         _cms_client = lmc.LayersManagerClient(*cms_connection_options)
     return _cms_client
 
+class MissingPropertyError(Exception): pass
+
 class CmsObject(object):
     """
     This is the base class for the object oriented interface to the Layers CMS.
@@ -18,17 +20,19 @@ class CmsObject(object):
     
     def __init__(self, kind, layer_id=0, **kwargs):
         self._property_names = lmc.KNOWN_CMS_ARGUMENTS[kind]
+        self._required_properties = lmc.REQUIRED_CMS_ARGUMENTS[kind]
         self.cms = kwargs.get('cms', None) or get_default_client()
         self._kind = kind
-        self.id = kwargs.get('id', None) or None
+        self.id = kwargs.get('id', None)
         self.layer_id = layer_id
-        if not self.id:
-           self.id = self.cms.Create(kind, self.layer_id, **kwargs)
         self._properties_loaded = False
         self._properties_updated = False
         self._properties = {}
+        for k, v in kwargs.items():
+            self.__setattr__(k, v)
 
     def _load_properties(self):
+        assert not self.is_unsaved # This shouldn't be called on a new, unsaved object
         tmp_new_properties = self._properties
         properties = self.cms.Query(self._kind, self.layer_id, self.id)
         self._properties = dict((str(k), v) for k, v in properties.items()) # convert keys from unicode to string (so they can be kwargs)
@@ -37,10 +41,17 @@ class CmsObject(object):
         self._properties_loaded = True
 
 
+    @property
+    def is_unsaved(self):
+        return not self.id
+
     def __getattr__(self, name):
         if name in self._property_names:
             if name not in self._properties and not self._properties_loaded:
-                self._load_properties()
+                if self.is_unsaved: # New, unsaved object.  No properties to retrieve.
+                    return None
+                else:
+                    self._load_properties()
             return self._properties[name]
         else:
             raise AttributeError("No property: %s" % name)
@@ -58,18 +69,27 @@ class CmsObject(object):
         #    raise AttributeError("No property or attribute: %s" % name)
  
     def save(self):
-        if not self._properties_updated:
-            return None #nothing to save
-        self.cms.Update(self._kind, self.layer_id, **self._properties)
+        for prop in self._required_properties:
+            if prop not in self._properties or not self._properties[prop]:
+                raise MissingPropertyError('%s object missing required property "%s".' % (self.__class__.__name__, prop))
+        if self.is_unsaved:
+            self.id = self.cms.Create(self._kind, self.layer_id, **self._properties)
+        else:
+            if not self._properties_updated:
+                return None #nothing to save
+            self.cms.Update(self._kind, self.layer_id, **self._properties)
         self._properties_updated = False
         return True
 
 class Layer(CmsObject):
-    def __init__(self, name, world='mars', id=0, *args, **kwargs):
-        kwargs['name'] = name
-        kwargs['world'] = world
+    # TODO: Add icon upload functionality... (call FetchAndUpload)
+    def __init__(self, id=0, **kwargs):
         CmsObject.__init__(self, 'layer', id, **kwargs)
-        if not id: self.layer_id = self.id  # set to the new layer_id if this is a newly created layer
-        self.icon = kwargs.get('icon', None)
-        #import pdb; pdb.set_trace()
-        self._layer = lmc.Layer(self.cms, self.id, self.icon)
+        #self.icon = kwargs.get('icon', None)
+        #self._layer = lmc.Layer(self.cms, self.id, self.icon)
+
+    def save(self):
+        is_new_layer = self.is_unsaved
+        CmsObject.save(self)
+        if is_new_layer:
+            self.layer_id = self.id # is this actually necessary?
