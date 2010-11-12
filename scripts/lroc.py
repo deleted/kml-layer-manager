@@ -102,28 +102,6 @@ class NACObservation(dict):
         return (l,r)
 
 
-def get_observations(cumindex_dir=METADATA_PATH, max_observations=None):
-    """DEPRECATED"""
-    wac_observations = {}
-    nac_observations = {}
-    for row in Table(os.path.join(METADATA_PATH, 'CUMINDEX.LBL'), os.path.join(METADATA_PATH, 'CUMINDEX.TAB')):
-        try:
-            obs = Observation(row)
-        except ValueError, TypeError:
-            continue # skip records with problematic coordinates
-        if obs.product_id[-2] in ('L','R'):
-            obs_id = obs.product_id[:-2]
-            if obs_id not in nac_observations:
-                nac_observations[obs_id] = NACObservation()
-            nac_observations[obs_id][obs.product_id[-2]] = obs
-        else:
-            # Assuming all other letters are WAC observations...
-            wac_observations[obs.product_id[:-1]] = obs
-        if max_observations > 0 and len([o for o in nac_observations.values() if ('L' in o and 'R' in o)]) >= max_observations:
-            break
-
-    return (nac_observations, wac_observations)
-
 def generate_nac_observations(cumindex_dir=METADATA_PATH, max_observations=None):
     nac_observations = {}
     i = 0
