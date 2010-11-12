@@ -44,6 +44,7 @@ class LayerTest(unittest.TestCase):
         self.assertEqual(get_default_client(), client) # make sure repeat calls yield the same object
 
     def test_create_layer(self):
+        # TODO: test adding icons in create / update cases
         self.mock_LayersManagerClient.Create('layer', 0, name=TEST_LAYER_NAME, world='mars').AndReturn(TEST_LAYER_ID)
         self.mox.ReplayAll()
 
@@ -55,6 +56,18 @@ class LayerTest(unittest.TestCase):
         self.assertEquals(layer.id, TEST_LAYER_ID)
         self.assertEquals( layer.layer_id, TEST_LAYER_ID)
     
+    def test_create_layer_with_icon(self):
+        # TODO: test adding icons in create / update cases
+        icon_url = 'http://somedomain.net/path/to/icon.png'
+        icon_id = 3
+        self.mock_LayersManagerClient.Create('layer', 0, name=TEST_LAYER_NAME, world='mars', icon=icon_url).AndReturn(TEST_LAYER_ID)
+        self.mox.ReplayAll()
+
+        layer = Layer(name='test_layer', world='mars', icon=icon_url)
+        layer.save()
+        self.assertEquals(layer.id, TEST_LAYER_ID)
+        self.assertEquals( layer.layer_id, TEST_LAYER_ID)
+
     def _test_lmc_tests(self): # this test is disabled
         """ 
             This is just to make sure the mock LayersManagerClient constructor 
@@ -88,7 +101,6 @@ class LayerTest(unittest.TestCase):
         layer.save()
         self.assertEqual(layer.description, LOREM_IPSUM)
         
-        #TODO: Test to ensure omitting a required property raises a MissingPropertyError
 
 if __name__ == '__main__':
     unittest.main()
