@@ -13,7 +13,7 @@ class MissingPropertyError(Exception): pass
 
 def class_for_kind(kind):
     result = None
-    classes = [c for c in globals() if inspect.isclass(c)]
+    classes = [c for c in globals().values() if inspect.isclass(c)]
     for klass in classes:
         if issubclass(klass, CmsObject) and klass.kind == kind:
             if result is not None:
@@ -34,40 +34,52 @@ class CmsObject(object):
     kind = None # Override this in subclasses
 
     @classmethod
-    def get_or_create(klass, kind, layer_id=None, *args, **kwargs):
-    """
-    If records exist on the CMS server that match the given keywords, get_or_create()
-    will return a list of all matching objects (as instances of the appropriate CmsObject subclass).
+    def fetch_or_create(klass, kind, layer_id=None, *args, **kwargs):
+        """
+        If records exist on the CMS server that match the given keywords, get_or_create()
+        will return a list of all matching objects (as instances of the appropriate CmsObject subclass).
 
-    Otherwise, it will create a new object, save it to the server, and return a single-element
-    list containing the new object.
-    """
+        Otherwise, it will create a new object, save it to the server, and return a single-element
+        list containing the new object.
+        """
+        def stringify_keys(dictionary):
+            return dict((str(k), v) for (k,v) in dictionary.items())
+
         cms = get_default_client()
         if kind == 'layer':
-            raise NotImplementedError
+            kwargs['nocontents'] = True
+            if layer_id:
+                kwargs['id'] = layer_id
         else:
             assert layer_id is not None
-            if 'id' in kwargs:
-                # Query and return [] wrapped result
+
+        if 'id' in kwargs:
+            # Query and return [] wrapped result
+            return [cms.Query(kind, layer_id, kwargs['id'])]
+        else:
+            # List and iterate
+            if kind == 'layer':
+                ids = cms.List(kind, **kwargs)
             else:
-                # List and iterate
                 ids = cms.List(kind, layer_id, **kwargs)
-                results = []
-                for id in results:
-                    properties = cms.Query(kind, layer_id, id)
-                    for k, v in kwargs.items():
-                        if properties[k] != v:
-                            continue
-                    else:
-                        results.append(properties)
-                if len(results) > 0:
-                    results = [class_for_kind(kind)(layer_id, **props) for props in results]
-                    return results
+            results = []
+            for id in ids:
+                if kind == 'layer':
+                    layer_id = id
+                properties = cms.Query(kind, layer_id, id)
+                for k, v in kwargs.items():
+                    if k != 'nocontents' and properties[k] != v:
+                        continue
                 else:
-                    # create!
-                    new_cms_obj = class_for_kind(kind)(layer_id, **kwargs)
-                    new_cms_obj.save()
-                    return [new_cms_obj]
+                    results.append(properties)
+            if len(results) > 0:
+                results = [class_for_kind(kind)(layer_id, **stringify_keys(props)) for props in results]
+                return results
+            else:
+                # create!
+                new_cms_obj = class_for_kind(kind)(layer_id, **kwargs)
+                new_cms_obj.save()
+                return [new_cms_obj]
 
     def __init__(self, layer_id=0, **kwargs):
         kind = self.kind
@@ -142,7 +154,7 @@ class Layer(CmsObject):
         is_new_layer = self.is_unsaved
         CmsObject.save(self)
         if is_new_layer:
-            self.layer_id = self.id # is this actually necessary?
+            self.layer_id = self.id # is this actually necessary? (yes)
 
 class Entity(CmsObject):
     kind = 'entity'

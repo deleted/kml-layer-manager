@@ -223,6 +223,18 @@ def record_successful_entities(entities):
         logfile.write(e['name'] + "\n")
     logfile.close()
 
+def lroc_style(layer_id):
+    styleprops = {
+        'name': 'lroc_footprint',
+        'polygon_outline': True,
+        'polygon_fill': False,
+        'line_width': 1,
+        'line_color': 'FFFFFFFF',
+    }
+    style = layers.CmsObject.fetch_or_create('style', layer_id, **styleprops)[0]
+    return style
+
+
 def try_create_entities(cms, layer_id, entities, retries = 3):
     print "Uploading %d entities..." % len(entities),
     while retries > 0:
@@ -237,17 +249,9 @@ def try_create_entities(cms, layer_id, entities, retries = 3):
     raise Exception("Too many retries.  Giving up.")
 
 def upload_nac_entities(cms, layer, schema_id, template_id, batchsize=200, exclude=[]):
-    styleprops = {
-        'name': 'lroc_footprint',
-        'polygon_outline': True,
-        'polygon_fill': False,
-        'line_width': 1,
-        'line_color': 'FFFFFFFF',
-    }
-    #cms.Delete('layer', layername)
-    style = layer.Create('style', **styleprops)
+    style = lroc_style()
     entities = []
-    for entity in generate_nac_entities(style, schema_id, template_id, exclude=exclude):
+    for entity in generate_nac_entities(style.id, schema_id, template_id, exclude=exclude):
         entities.append(entity)   
         ### TODO: bulk upload this list when it accumulates to a given size
         if len(entities) >= batchsize:
@@ -282,7 +286,7 @@ def create_nac_schema(cms, layer):
     return (schema_id, template_id)
 
 def main():
-    layername="MOC NAC"
+    layername="LROC NAC"
 
     parser = optparse.OptionParser()
     parser.add_option('--resume', action='store_true', dest='resume', default=False)
