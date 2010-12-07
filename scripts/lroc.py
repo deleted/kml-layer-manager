@@ -7,8 +7,15 @@ import logging
 import urllib2
 import optparse
 
-sys.path.insert(0, '/home/ted/googleappengine/python')
-sys.path.insert(0, '/home/ted/googleappengine/python/lib/fancy_urllib') # Because it's installed in a weird way.
+#sys.path.insert(0, '/home/ted/googleappengine/python')
+#sys.path.insert(0, '/home/ted/googleappengine/python/lib/fancy_urllib') # Because it's installed in a weird way.
+for path in (
+    '/Applications/GoogleAppEngineLauncher.app/Contents/Resources/GoogleAppEngine-default.bundle/Contents/Resources/google_appengine/lib/fancy_urllib',
+    '/home/ted/googleappengine/python/lib/fancy_urllib',
+    '/home/ted/googleappengine/python',
+    ):
+    if os.path.exists(path):
+        sys.path.insert(0,path)
 sys.path.insert(0, '../client/')
 
 import layers
@@ -136,7 +143,7 @@ def delete_existing_layers(cms, name):
     layer_ids = cms.List('layer')
     i = 0
     for lid in layer_ids:
-        layer = cms.Query('layer', lid, lid, nocontnets='true')
+        layer = cms.Query('layer', lid, lid, nocontents='true')
         if layer['name'] == name:
             cms.Delete('layer',lid)
             i += 1
@@ -165,7 +172,9 @@ def get_first_layer(cms, name):
         layer = cms.Query('layer', lid, lid, nocontents='true')
         if layer['name'] == name:
             print "Done."
-            return lid
+            layer['id'] = lid
+            #return layer
+            return layers.lmc.Layer(cms, lid)
     else:
         raise Exception('Layer "%s" not found.' % name)
 
@@ -218,7 +227,7 @@ def generate_nac_entities(style, schema_id, template_id, exclude=[]):
     
 
 def record_successful_entities(entities):
-    logfile = open('successful_uploads.txt','wa')
+    logfile = open('successful_uploads.txt','a')
     for e in entities:
         logfile.write(e['name'] + "\n")
     logfile.close()
@@ -249,7 +258,7 @@ def try_create_entities(cms, layer_id, entities, retries = 3):
     raise Exception("Too many retries.  Giving up.")
 
 def upload_nac_entities(cms, layer, schema_id, template_id, batchsize=200, exclude=[]):
-    style = lroc_style()
+    style = lroc_style(layer.id)
     entities = []
     for entity in generate_nac_entities(style.id, schema_id, template_id, exclude=exclude):
         entities.append(entity)   
@@ -259,7 +268,7 @@ def upload_nac_entities(cms, layer, schema_id, template_id, batchsize=200, exclu
             try_create_entities(cms, layer.id, entities)
             entities = []
     else:
-        try_create_entities(layer.id, entities)
+        try_create_entities(cms, layer.id, entities)
     print "Loaded %d observations."
     print "URL: ", layer.GetLayerKMLURL()
 
@@ -297,14 +306,14 @@ def main():
     print "Done."
     if options.resume:
         print "RESUME MODE"
-        layer_id = get_first_layer(cms, layername)
-        (schema_id, template_id) = get_schema_and_template(cms, layer_id)
+        layer = get_first_layer(cms, layername)
+        (schema_id, template_id) = get_schema_and_template(cms, layer.id)
         exclude_set = get_already_loaded_set()
-        upload_nac_entities(cms, layer_id, schema_id, template_id, exclude=exclude_set)
+        upload_nac_entities(cms, layer, schema_id, template_id, exclude=exclude_set)
 
     else:
         print "Creating layer."
-        delete_existing_layers(cms, layername)
+        #delete_existing_layers(cms, layername)
         layer = cms.Create('layer', name=layername, world='mars', return_interface=True)
         print "Creating Schema"
         (schema_id, template_id) = create_nac_schema(cms, layer)
