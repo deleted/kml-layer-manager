@@ -1,0 +1,31 @@
+{% spaceless %}
+<Folder id="id{{ folder.key.id }}">
+  <name>{{ folder.name|EscapeForXML }}</name>
+  {% if folder.icon or folder.item_type or description %}
+  <Style>
+      {% if folder.icon or folder.item_type %}
+        <ListStyle>
+          {% if folder.item_type %}
+            <listItemType>{{ folder.item_type }}</listItemType>
+          {% endif %}
+          {% if folder.icon %}
+            <ItemIcon>
+              <href>{{ folder.icon.GetURL|EscapeForXML }}</href>
+            </ItemIcon>
+          {% endif %}
+        </ListStyle>
+      {% endif %}
+      {% if description %}
+        <BalloonStyle>
+          <text>{{ description|EscapeForXML }}</text>
+        </BalloonStyle>
+      {% endif %}
+    </Style>
+  {% endif %}
+  {% if folder.region|IsNotNone %}{{ folder.region.GenerateKML }}{% endif %}
+  {% for item in contents %}
+    {{ item }}
+  {% endfor %}
+  {{ folder.custom_kml|default:"" }}
+</Folder>
+{% endspaceless %}

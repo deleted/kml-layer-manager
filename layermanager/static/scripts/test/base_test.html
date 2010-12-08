@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<!--
+  Copyright 2010 Google Inc.
+ 
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+ 
+      http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<html>
+<head>
+  <title>Unit Tests: Base</title>
+  <script type="text/javascript" src="lib/jsunit/app/jsUnitCore.js"></script>
+  <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+  <script type="text/javascript">
+    var layermanager = {};
+    layermanager.resources = {};
+    layermanager.resources.layer = {};
+    layermanager.resources.layer.id = 12345;
+    layermanager.resources.layer.name = 'Test Layer';
+    layermanager.resources.layer.icon = null;
+    layermanager.resources.layer.autoManaged = false;
+  </script>
+  <script type="text/javascript" src="../base.js"></script>
+</head>
+<body>
+  <!-- For testSetupTogglers() -->
+  <div id="toggler1" class="toggler"></div>
+  <div id="togglee1" class="togglee"></div>
+
+  <div id="toggler2" class="toggler untoggleable"></div>
+  <div id="togglee2" class="togglee"></div>
+
+  <div id="toggler3" class="toggler"></div>
+  <div></div>
+  <div id="togglee3" class="togglee"></div>
+
+  <!-- For testInitDateField() -->
+  <input type="text" class="to-be-datepicked" />
+  <input type="text" class="to-be-datepicked" />
+  <input type="text" />
+
+  <!-- For testInitColorField() -->
+  <input type="text" class="to-be-colorpicked" />
+  <input type="text" class="to-be-colorpicked" />
+  <input type="text" />
+  <div id="cp-dummy"></div>
+
+  <!-- For testInitFloatField() -->
+  <input type="text" id="float-field" />
+  <input type="text" id="negative-float-field" />
+
+  <!-- For testInitIntegerField() -->
+  <input type="text" id="integer-field" />
+
+  <!-- For testVisualizeImageSelect() -->
+  <select id="image-select">
+    <option value="">None</option>
+    <option value="123" selected="selected">Test 1</option>
+    <option value="456">Test 2</option>
+  </select>
+
+  <!-- For testVisualizeIconSelect() -->
+  <select id="icon-select">
+    <option value="">None</option>
+    <option value="78" selected="selected">Test 3</option>
+    <option value="90">Test 4</option>
+  </select>
+
+  <!-- For testMakeHandler() -->
+  <input type="text" id="handler_dummy" />
+
+  <script type="text/javascript">
+
+  /** Helper to create simple key-press-simulating functions. */
+  function makeTriggerKey(input) {
+    return function(character, keyCode, ctrlKey) {
+      var event = jQuery.Event('keypress');
+      event.charCode = character.charCodeAt(0);
+      event.keyCode = keyCode;
+      event.ctrlKey = Boolean(ctrlKey);
+      input.trigger(event);
+      return event.isDefaultPrevented();
+    };
+  }
+
+  /** Counter for functions called indirectly. */
+  var callbacksCalled;
+
+  /** Registers that a callback was called. */
+  function countCallback() {
+    callbacksCalled++;
+  }
+
+  function setUp() {
+    callbacksCalled = 0;
+  }
+
+  function tearDown() {
+    // Nothing.
+  }
+
+  function testReportError() {
+    var realShowModalBox = layermanager.ui.showModalBox;
+
+    try {
+      layermanager.ui.showModalBox = function(msg) {
+        assertEquals('Incorrect message passed.',
+                     '<div id="error">A test error message</div>', msg);
+        callbacksCalled++;
+      };
+      layermanager.ui.reportError('A test error message');
+      assertEquals('Showed modal box wrong number of times.',
+                   1, callbacksCalled);
+
+      layermanager.ui.showModalBox = function(msg) {
+        assertEquals('Incorrect message passed.',
+                     '<div id="error">An unexpected error has occurred. ' +
+                     'Please wait a moment and retry your operation again.' +
+                     '</div>', msg);
+        callbacksCalled++;
+      };
+      layermanager.ui.reportError('');
+      assertEquals('Showed modal box wrong number of times.',
+                   2, callbacksCalled);
+    } finally {
+      layermanager.ui.showModalBox = realShowModalBox;
+    }
+  }
+
+  function testSetupTogglers() {
+    layermanager.ui.setupTogglers();
+
+    assert('Normal togglee invisible.', jQuery('#togglee1').is(':visible'));
+    jQuery('#toggler1').click();
+    assert('Normal toggler not toggled.', jQuery('#toggler1').is('.toggled'));
+    assert('Normal togglee not toggled.', !jQuery('#togglee1').is(':visible'));
+    jQuery('#toggler1').click();
+    assert('Normal toggler not untoggled.',
+           !jQuery('#toggler1').is('.toggled'));
+    assert('Normal togglee not untoggled.', jQuery('#togglee1').is(':visible'));
+
+    assert('Untoggleable togglee invisible.',
+           jQuery('#togglee2').is(':visible'));
+    jQuery('#toggler2').click();
+    assert('Untoggleable toggler toggled.',
+           !jQuery('#toggler2').is('.toggled'));
+    assert('Untoggleable togglee toggled.', jQuery('#togglee2').is(':visible'));
+
+    assert('Distant togglee invisible.', jQuery('#togglee3').is(':visible'));
+    jQuery('#toggler3').click();
+    assert('Distant toggler toggled.', !jQuery('#toggler3').is('.toggled'));
+    assert('Distant togglee toggled.', jQuery('#togglee3').is(':visible'));
+  }
+
+  function testVisualizeIconSelect() {
+    layermanager.ui.visualizeIconSelect($('#icon-select'));
+
+    // Immediate visualization effects.
+    assertEquals('Visualization box not shown.',
+                 1, jQuery('.icon-dropdown').length);
+    assertEquals('Value lost after visualizing.',
+                 '78', jQuery('#icon-select').val());
+    assertEquals('Initial selected choice text different.',
+                 'Test 3', jQuery('.icon-selected').text());
+    assertEquals('Number of choices different.',
+                 3, jQuery('.icon-dropdown div').length);
+
+    // Dropdown.
+    assert('Dropdown not initially hidden.',
+           !jQuery('.icon-dropdown').is(':visible'));
+    jQuery('.icon-selected').click();
+    assert('Dropdown not shown on click.',
+           jQuery('.icon-dropdown').is(':visible'));
+
+    // Selection propagation when selecting an icon choice.
+    jQuery('.icon-dropdown div:last-child').click();
+    assertEquals('Selected choice text different.',
+                 'Test 4', jQuery('.icon-selected').text());
+    assertEquals('Selection not propagated.',
+                 '90', jQuery('#icon-select').val());
+
+    // Selection propagation when selecting no icon.
+    jQuery('.icon-dropdown div:first-child').click();
+    assertEquals('Selected choice text different (no icon).',
+                 'None', jQuery('.icon-selected').text());
+    assertEquals('Selection not propagated (no icon).',
+                 '', jQuery('#icon-select').val());
+  }
+
+  function testVisualizeImageSelect() {
+    layermanager.ui.visualizeImageSelect($('#image-select'));
+    assertEquals('Visualization box not shown.',
+                 1, jQuery('.image-list').length);
+    assertEquals('Value lost after visualizing.',
+                 '123', jQuery('#image-select').val());
+    assertEquals('Number of choices different.',
+                 3, jQuery('.image-list .image-block').length);
+    assertEquals('Selection not transferred on visualization.',
+                 1, jQuery('.image-list .image-block.selected').length);
+    assertEquals('Incorrect selection transferred on visualization.',
+                 '123', jQuery('.image-list .image-block.selected').data('id'));
+
+    // Check selection propagation when selecting an image choice.
+    var unselectedImage = jQuery('.image-list .image-block:last-child');
+    unselectedImage.click();
+    assert('Click did not transfer selection.',
+           unselectedImage.is('.selected'));
+    assertEquals('New selection did not cancel old.',
+                 1, jQuery('.image-list .image-block.selected').length);
+    assertEquals('Selection not propagated.',
+                 '456', $('#image-select').val());
+
+    // Check selection propagation when selecting no image.
+    var unselectedImage = jQuery('.image-list .image-block:first-child');
+    unselectedImage.click();
+    assert('Click did not transfer selection (no image).',
+           unselectedImage.is('.selected'));
+    assertEquals('New selection did not cancel old (no image).',
+                 1, jQuery('.image-list .image-block.selected').length);
+    assertEquals('Selection not propagated (no image).',
+                 '', $('#image-select').val());
+  }
+
+  function testShowModalBox() {
+    var realHideModalBox = layermanager.ui.hideModalBox;
+    layermanager.ui.hideModalBox = countCallback;
+
+    try {
+      // Minimal call with all defaults.
+      layermanager.ui.showModalBox('Test message');
+      assertEquals('Shader not shown.', 1, jQuery('#background_shader').length);
+      assertEquals('Box not shown.', 1, jQuery('#modal_box').length);
+      assertEquals('Ok button not created.', 1, jQuery('#modal_box_ok').length);
+      assertEquals('Cancel button created when not requested.',
+                   0, jQuery('#modal_box_cancel').length);
+      assertEquals('Invalid message shown.',
+                   'Test message', jQuery('#modal_box_contents').html());
+      jQuery('#modal_box_ok').click();
+      assertEquals('OK button did not hide form.', 1, callbacksCalled);
+
+      // Make sure previous box closed on repeated call.
+      layermanager.ui.showModalBox('Dummy');
+      assertEquals('Did not hide previous box.', 2, callbacksCalled);
+      realHideModalBox();
+
+      // Custom Ok and cancel actions.
+      var okCalled = false;
+      var cancelCalled = false;
+      layermanager.ui.showModalBox('Test message 2',
+                                function() { okCalled = true; },
+                                function() { cancelCalled = true; });
+      assertEquals('Shader not shown.', 1, jQuery('#background_shader').length);
+      assertEquals('Box not shown.', 1, jQuery('#modal_box').length);
+      assertEquals('Ok button not created.', 1, jQuery('#modal_box_ok').length);
+      assertEquals('Cancel button not created.',
+                   1, jQuery('#modal_box_cancel').length);
+      assertEquals('Invalid message shown.',
+                  'Test message 2', jQuery('#modal_box_contents').html());
+      assertFalse('OK handler called prematurely.', okCalled);
+      jQuery('#modal_box_ok').click();
+      assertTrue('OK handler not called.', okCalled);
+      assertFalse('Cnacel handler called prematurely.', cancelCalled);
+      jQuery('#modal_box_cancel').click();
+      assertTrue('Cnacel handler not called.', cancelCalled);
+    } finally {
+      layermanager.ui.hideModalBox = realHideModalBox;
+    }
+  }
+
+  function testHideModalBox() {
+    layermanager.ui.showModalBox();
+    assertEquals('Shader not shown.', 1, jQuery('#background_shader').length);
+    assertEquals('Box not shown.', 1, jQuery('#modal_box').length);
+    layermanager.ui.hideModalBox();
+    assertEquals('Shader not hidden.', 0, jQuery('#background_shader').length);
+    assertEquals('Box not hidden.', 0, jQuery('#modal_box').length);
+  }
+
+  function testInitIntegerField() {
+    var input = jQuery('#integer-field');
+    layermanager.ui.initIntegerField(input);
+
+    // General cleaning.
+    input.val('hello').keyup();
+    assertEquals('Non-digits not cleared.', '', input.val());
+    input.val('').keyup();
+    assertEquals('Empty string tampered with.', '', input.val());
+    input.val('123').keyup();
+    assertEquals('Integer mangled.', '123', input.val());
+    input.val('-123').keyup();
+    assertEquals('Negative unmangled.', '123', input.val());
+    input.val('4.5').keyup();
+    assertEquals('Float unmangled.', '45', input.val());
+    input.val('67abc').keyup();
+    assertEquals('Trailing junk undiscarded.', '67', input.val());
+    input.val('abc89').keyup();
+    assertEquals('Leading junk undiscarded.', '89', input.val());
+    input.val('1a.b2cd34').keyup();
+    assertEquals('Scattered junk undiscarded.', '1234', input.val());
+    input.val('5a6').blur();
+    assertEquals('Blur event misbehaved.', '56', input.val());
+
+    // Key blocking.
+    triggerKey = makeTriggerKey(input);
+    input.val('123');
+    assertTrue('Alpha unblocked.', triggerKey('a'));
+    assertTrue('Minus sign unblocked.', triggerKey('-'));
+    assertTrue('Period unblocked.', triggerKey('.'));
+    assertFalse('Digit blocked.', triggerKey('4'));
+    assertFalse('Backspace blocked.', triggerKey('\x08', 8));
+    assertFalse('Copy blocked.', triggerKey('c', undefined, true));
+  }
+
+  function testInitFloatField() {
+    var input = jQuery('#float-field');
+    layermanager.ui.initFloatField(input);
+
+    // General cleaning.
+    input.val('hello').keyup();
+    assertEquals('Non-digits not cleared.', '', input.val());
+    input.val('').keyup();
+    assertEquals('Empty string tampered with.', '', input.val());
+    input.val('123').keyup();
+    assertEquals('Integer mangled.', '123', input.val());
+    input.val('-123').keyup();
+    assertEquals('Disallowed negative unmangled.', '123', input.val());
+    input.val('4.5').keyup();
+    assertEquals('Float mangled.', '4.5', input.val());
+    input.val('.67').keyup();
+    assertEquals('Float with leading period mangled.', '.67', input.val());
+    input.val('8.').keyup();
+    assertEquals('Float with trailing period mangled.', '8.', input.val());
+    input.val('00.9').keyup();
+    assertEquals('Float with leading zeros mangled.', '00.9', input.val());
+    input.val('1.2.3').keyup();
+    assertEquals('Float with multiple periods unfixed.', '1.23', input.val());
+    input.val('45.67abc').keyup();
+    assertEquals('Trailing junk undiscarded.', '45.67', input.val());
+    input.val('abc8.9').keyup();
+    assertEquals('Leading junk undiscarded.', '8.9', input.val());
+    input.val('1a.b2cd34').keyup();
+    assertEquals('Scattered junk undiscarded.', '1.234', input.val());
+    input.val('1a.b2cd34').blur();
+    assertEquals('Blur event misbehaved.', '1.234', input.val());
+
+    // Key blocking.
+    triggerKey = makeTriggerKey(input);
+    input.val('1.23');
+    assertTrue('Alpha unblocked.', triggerKey('a'));
+    input.val('1.23');
+    assertFalse('Digit blocked.', triggerKey('4'));
+    input.val('1.23');
+    assertTrue('Extra period unblocked.', triggerKey('.'));
+    input.val('123');
+    assertFalse('Proper trailing period blocked.', triggerKey('.'));
+    input.val('');
+    assertFalse('Proper leading period blocked.', triggerKey('.'));
+    input.val('123');
+    input.get(0).selectionStart = 0;
+    assertTrue('Disallowed minus sign unblocked.', triggerKey('-'));
+    input.val('123.456');
+    assertFalse('Backspace blocked.', triggerKey('\x08', 8));
+    input.val('123.456');
+    assertFalse('Copy blocked.', triggerKey('c', undefined, true));
+
+    // Negative field.
+    input = jQuery('#negative-float-field');
+    layermanager.ui.initFloatField(input, true);
+    triggerKey = makeTriggerKey(input);
+
+    input.val('-123').keyup();
+    assertEquals('Allowed negative mangled.', '-123', input.val());
+    input.val('123');
+    input.get(0).selectionStart = 0;
+    assertFalse('Allowed minus sign blocked.', triggerKey('-'));
+    input.get(0).selectionStart = 2;
+    assertTrue('Non-leading minus sign unblocked.', triggerKey('-'));
+  }
+
+  function testInitColorPicker() {
+    // Make sure doesn't raise any error when ColorPicker is undefined.
+    layermanager.ui.initColorPicker(jQuery('.to-be-colorpicked'));
+    assert(!jQuery('.to-be-colorpicked').is('color-picker'));
+
+    var canonicalColor = $('#cp-dummy').css('color', '#345678').css('color');
+
+    jQuery.fn.ColorPicker = function(options) {
+      assert(this.is('.to-be-colorpicked'));
+      assertEquals('Incorrect color.', 'ffffffff', options.color);
+      assertTrue('Incorrect default alpha setting.', options.alpha);
+      assertFalse('Incorrect palette setting.', options.palette);
+
+      options.onChange(null, '12345678', null);
+      assertEquals('Wrong propagated colorpicker value.',
+                   '12345678', this.val());
+      assertEquals('Wrong propagated colorpicker color.',
+                   canonicalColor, this.css('color'));
+      assertEquals('Wrong propagated colorpicker background color.',
+                   canonicalColor, this.css('background-color'));
+
+      callbacksCalled++;
+      return this;
+    };
+    layermanager.ui.initColorPicker(jQuery('.to-be-colorpicked'));
+    assert('Colorpicker class not assigned.',
+           jQuery('.to-be-colorpicked').is('.color-picker'));
+    assertEquals(jQuery('.to-be-colorpicked').attr('spellcheck'), 'false');
+    assertEquals('Colorpicked a wrong number of inputs.', 2, callbacksCalled);
+
+    jQuery.fn.ColorPicker = function(options) {
+      assertFalse('Incorrect overridden alpha setting.', options.alpha);
+
+      options.onChange(null, '12345678', null);
+      assertEquals('Wrong propagated colorpicker value.',
+                   '345678', this.val());
+      assertEquals('Wrong propagated colorpicker color.',
+                   canonicalColor, this.css('color'));
+      assertEquals('Wrong propagated colorpicker background color.',
+                   canonicalColor, this.css('background-color'));
+
+      callbacksCalled++;
+      return this;
+    };
+    layermanager.ui.initColorPicker(jQuery('.to-be-colorpicked'), false);
+    assertEquals('Colorpicked a wrong number of inputs.', 4, callbacksCalled);
+
+    delete jQuery.fn.ColorPicker;
+  }
+
+  function testInitDateField() {
+    // Make sure doesn't raise any error when datepicker is undefined.
+    layermanager.ui.initDateField(jQuery('.to-be-datepicked'));
+
+    jQuery.fn.datepicker = function(options) {
+      assert(this.is('.to-be-datepicked'));
+      assertEquals('Incorrect show events.', 'both', options.shownOn);
+      assertEquals('Incorrect date format.', 'YMD-', options.dateFormat);
+      callbacksCalled++;
+      return this;
+    };
+    layermanager.ui.initDateField(jQuery('.to-be-datepicked'));
+    assertEquals('Datepicked a wrong number of inputs.', 2, callbacksCalled);
+    delete jQuery.fn.datepicker;
+  }
+
+  function testABGRToARGBColor() {
+    assertEquals('AARRGGBB', layermanager.format.ABGRToARGBColor('AABBGGRR'));
+    assertEquals('AARRGGBB', layermanager.format.ARGBToABGRColor('AABBGGRR'));
+    assertEquals('12345678', layermanager.format.ABGRToARGBColor('12785634'));
+  }
+
+  function testFormatCoordinate() {
+    assertEquals('0&deg;00\'00" a', layermanager.format.formatCoordinate(0, 'a'));
+    assertEquals('5&deg;00\'00" bc',
+                 layermanager.format.formatCoordinate(5, 'bc'));
+    assertEquals('8&deg;24\'43" def',
+                 layermanager.format.formatCoordinate(8.412, 'def'));
+    assertEquals('-8&deg;-24\'-43" ghij',
+                 layermanager.format.formatCoordinate(-8.412, 'ghij'));
+  }
+
+  function testFormatLatitude() {
+    assertEquals('0&deg;00\'00" N', layermanager.format.formatLatitude(0));
+    assertEquals('5&deg;00\'00" N', layermanager.format.formatLatitude(5));
+    assertEquals('5&deg;00\'00" S', layermanager.format.formatLatitude(-5));
+    assertEquals('8&deg;24\'43" N', layermanager.format.formatLatitude(8.412));
+    assertEquals('8&deg;24\'43" S', layermanager.format.formatLatitude(-8.412));
+    assertEquals('190&deg;00\'00" N', layermanager.format.formatLatitude(190));
+    assertEquals('190&deg;00\'00" S', layermanager.format.formatLatitude(-190));
+  }
+
+  function testFormatLongitude() {
+    assertEquals('0&deg;00\'00" E', layermanager.format.formatLongitude(0));
+    assertEquals('5&deg;00\'00" E', layermanager.format.formatLongitude(5));
+    assertEquals('5&deg;00\'00" W', layermanager.format.formatLongitude(-5));
+    assertEquals('8&deg;24\'43" E', layermanager.format.formatLongitude(8.412));
+    assertEquals('8&deg;24\'43" W', layermanager.format.formatLongitude(-8.412));
+    assertEquals('190&deg;00\'00" E', layermanager.format.formatLongitude(190));
+    assertEquals('190&deg;00\'00" W', layermanager.format.formatLongitude(-190));
+  }
+
+  function testFormatAltitude() {
+    assertEquals('NaN m', layermanager.format.formatAltitude());
+    assertEquals('0 m', layermanager.format.formatAltitude(0));
+    assertEquals('12 m', layermanager.format.formatAltitude(12));
+    assertEquals('999 m', layermanager.format.formatAltitude(999));
+    assertEquals('1000 m', layermanager.format.formatAltitude(1000));
+    assertEquals('1 km', layermanager.format.formatAltitude(1001));
+    assertEquals('1 km', layermanager.format.formatAltitude(1004));
+    assertEquals('1.01 km', layermanager.format.formatAltitude(1005));
+    assertEquals('5.68 km', layermanager.format.formatAltitude(5678));
+    assertEquals('-5.68 km', layermanager.format.formatAltitude(-5678));
+  }
+
+  function testGetResourceUrl() {
+    var host = window.location.host;
+    assertEquals(null, layermanager.util.getResourceUrl());
+    assertEquals('http://' + host + '/serve/0/r123',
+                 layermanager.util.getResourceUrl(123));
+    assertEquals('http://' + host + '/serve/0/r123?resize=456',
+                 layermanager.util.getResourceUrl(123, 456));
+    assertEquals('http://' + host + '/serve/0/ra?resize=b',
+                 layermanager.util.getResourceUrl('a', 'b'));
+  }
+
+  function testMakeHandler() {
+    layermanager.resources.layer = {id: 13};
+    var realAjax = jQuery.ajax;
+    var ajaxStatus = 200;
+    var dummyFields = {field1: 'ghi', field2: 'jkl', field3: 42};
+    var dummyHandler = jQuery('#handler_dummy');
+    jQuery.ajax = function(options) {
+      assert('Button not disabled', dummyHandler.attr('disabled'));
+      assertEquals('Invalid AJAX request type.', 'POST', options.type);
+      assertEquals('Invalid AJAX URL.', '/def-abc/13', options.url);
+      assertEquals('Invalid AJAX datafields.', dummyFields, options.data);
+      options.complete({status: ajaxStatus, responseText: 'ajax-result'});
+    };
+
+    try {
+      // Success.
+      var successCalled = false;
+      var errorCalled = false;
+      var handler = layermanager.util.makeHandler({
+        action: 'abc',
+        type: 'def',
+        collect: function(a, b) {
+          assertEquals('First arg not passed to gatherer.', 'dummy-arg-1', a);
+          assertEquals('Second arg not passed to gatherer.', 'dummy-arg-2', b);
+          return dummyFields;
+        },
+        validate: function(fields) {
+          assertEquals('Fields no passed to validator.', dummyFields, fields);
+          return true;
+        },
+        succeed: function(result) {
+          assertFalse('Button not re-enabled', dummyHandler.attr('disabled'));
+          assertEquals('Invalid AJAX result.', result, 'ajax-result');
+          successCalled = true;
+        },
+        fail: function() {
+          errorCalled = true;
+        }
+      });
+      assertFalse('Success handler called prematurely.', successCalled);
+      assertFalse('Error handler called prematurely.', errorCalled);
+      handler.call(jQuery('#handler_dummy'), 'dummy-arg-1', 'dummy-arg-2');
+      assert('Success handler not called.', successCalled);
+      assertFalse('Error handler called unnecessarily.', errorCalled);
+
+      // Validation failure.
+      successCalled = false;
+      errorCalled = false;
+      handler = layermanager.util.makeHandler({
+        action: 'abc',
+        type: 'def',
+        collect: function() {
+          return dummyFields;
+        },
+        validate: function(fields) {
+          assertEquals('Fields no passed to validator.', dummyFields, fields);
+          return false;
+        },
+        succeed: function() {
+          successCalled = true;
+        },
+        fail: function() {
+          errorCalled = true;
+        }
+      });
+      handler.call(jQuery('#handler_dummy'));
+      assertFalse('Success handler called despite validation failure.',
+                  successCalled);
+      assertFalse('Error handler called unnecessarily.', errorCalled);
+
+      // AJAX failure.
+      ajaxStatus = 500;
+      successCalled = false;
+      errorCalled = false;
+      handler = layermanager.util.makeHandler({
+        action: 'abc',
+        type: 'def',
+        collect: function() {
+          return dummyFields;
+        },
+        validate: function(fields) {
+          assertEquals('Fields no passed to validator.', dummyFields, fields);
+          return true;
+        },
+        succeed: function(result) {
+          successCalled = true;
+        },
+        fail: function(message) {
+          assertEquals('Incorrect AJAX error result.', message, 'ajax-result');
+          errorCalled = true;
+        }
+      });
+      handler.call(jQuery('#handler_dummy'));
+      assertFalse('Success handler called despite AJAX failure.',
+                  successCalled);
+      assert('Error handler not called despite AJAX failure.', errorCalled);
+    } finally {
+      delete layermanager.resources.layer;
+      jQuery.ajax = realAjax;
+    }
+  }
+
+  function testValidateFieldsContainName() {
+    var realReportError = layermanager.ui.reportError;
+    layermanager.ui.reportError = function(msg) {
+      assertEquals('Incorrect message passed.', 'Name cannot be empty!', msg);
+      callbacksCalled++;
+    };
+
+    try {
+      assertFalse(layermanager.util.validateFieldsContainName({}));
+      assertEquals('Considered lack of name valid.', 1, callbacksCalled);
+
+      assertFalse(layermanager.util.validateFieldsContainName({name: ''}));
+      assertEquals('Considered name="" valid.', 2, callbacksCalled);
+
+      assertFalse(layermanager.util.validateFieldsContainName({name: null}));
+      assertEquals('Considered name=null valid.', 3, callbacksCalled);
+
+      assertFalse(layermanager.util.validateFieldsContainName({name: 0}));
+      assertEquals('Considered name=0 valid.', 4, callbacksCalled);
+
+      assert(layermanager.util.validateFieldsContainName({name: true}));
+      assertEquals('Considered name=true invalid.', 4, callbacksCalled);
+      assert(layermanager.util.validateFieldsContainName({name: 'dummy'}));
+      assertEquals('Considered name="dummy" invalid.', 4, callbacksCalled);
+    } finally {
+      layermanager.ui.reportError = realReportError;
+    }
+  }
+
+  </script>
+</body>
+</html>

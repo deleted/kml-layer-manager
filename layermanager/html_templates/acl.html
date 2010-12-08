@@ -1,0 +1,29 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <title>User Login Permissions</title>
+  </head>
+  <body>
+    {% if users.get %}
+      <form action="" method="post">
+        <p>
+          Existing Users:
+          <select name="email">
+            {% for user in users %}
+              <option>{{ user.user.email }}</option>
+            {% endfor %}
+          </select>
+          <input type="submit" name="action" value="Delete" />
+        </p>
+      </form>
+    {% endif %}
+    <form action="" method="post">
+      <p>
+        Email:
+        <input type="text" name="email" />
+        <input type="submit" name="action" value="Add" />
+      </p>
+    </form>
+  </body>
+</html>

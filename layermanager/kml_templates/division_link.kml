@@ -1,0 +1,20 @@
+{% spaceless %}
+<NetworkLink>
+  <Link>
+    <href>k{{ division.key.id }}.km{% if division.layer.compressed %}z{% else %}l{% endif %}</href>
+    <viewRefreshMode>onRegion</viewRefreshMode>
+  </Link>
+  <Region>
+    <LatLonAltBox>
+      <north>{{ division.north }}</north>
+      <south>{{ division.south }}</south>
+      <east>{{ division.east }}</east>
+      <west>{{ division.west }}</west>
+    </LatLonAltBox>
+    <Lod>
+      <minLodPixels>{{ division.layer.division_lod_min|default:"512" }}</minLodPixels>
+      <maxLodPixels>{{ division.layer.division_lod_max|default:"-1" }}</maxLodPixels>
+    </Lod>
+  </Region>
+</NetworkLink>
+{% endspaceless %}

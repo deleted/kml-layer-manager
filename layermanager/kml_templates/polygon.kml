@@ -1,0 +1,20 @@
+{% spaceless %}
+<Polygon>
+  {% if polygon.extrude|IsNotNone %}<extrude>{{ polygon.extrude|yesno:"1,0" }}</extrude>{% endif %}
+  {% if polygon.tessellate|IsNotNone %}<tessellate>{{ polygon.tessellate|yesno:"1,0" }}</tessellate>{% endif %}
+  {% if polygon.altitude_mode|IsNotNone %}<altitudeMode>{{ polygon.altitude_mode }}</altitudeMode>{% endif %}
+  <outerBoundaryIs>
+    <LinearRing>
+      <coordinates>{{ polygon.outer_points|FormatCoordinates:polygon.outer_altitudes }} {{ polygon.outer_points.0.lon }},{{ polygon.outer_points.0.lat }}{% if polygon.outer_altitudes %},{{ polygon.outer_altitudes.0 }}{% endif %}</coordinates>
+    </LinearRing>
+  </outerBoundaryIs>
+
+  {% if polygon.inner_points %}
+  <innerBoundaryIs>
+    <LinearRing>
+      <coordinates>{{ polygon.inner_points|FormatCoordinates:polygon.inner_altitudes }} {{ polygon.inner_points.0.lon }},{{ polygon.inner_points.0.lat }}{% if polygon.inner_altitudes %},{{ polygon.inner_altitudes.0 }}{% endif %}</coordinates>
+    </LinearRing>
+  </innerBoundaryIs>
+  {% endif %}
+</Polygon>
+{% endspaceless %}

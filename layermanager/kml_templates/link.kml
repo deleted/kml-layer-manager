@@ -1,0 +1,31 @@
+{% spaceless %}
+<NetworkLink id="id{{ link.key.id }}">
+  <name>{{ link.name }}</name>
+  {% if link.icon or link.item_type or description %}
+  <Style>
+      {% if link.icon or link.item_type %}
+        <ListStyle>
+          {% if link.item_type %}
+            <listItemType>{{ link.item_type }}</listItemType>
+          {% endif %}
+          {% if link.icon %}
+            <ItemIcon>
+              <href>{{ link.icon.GetURL|EscapeForXML }}</href>
+            </ItemIcon>
+          {% endif %}
+        </ListStyle>
+      {% endif %}
+      {% if description %}
+        <BalloonStyle>
+          <text>{{ description|EscapeForXML }}</text>
+        </BalloonStyle>
+      {% endif %}
+    </Style>
+  {% endif %}
+  {% if link.region|IsNotNone %}{{ link.region.GenerateKML }}{% endif %}
+  <Link>
+    <href>{{ link.url }}</href>
+  </Link>
+  {{ link.custom_kml|default:"" }}
+</NetworkLink>
+{% endspaceless %}

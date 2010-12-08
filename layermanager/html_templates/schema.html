@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Schemas{% endblock %}
+{% block page_title %}Edit Schemas{% endblock %}
+
+{% block content %}
+  <!-- Schemas -->
+  <div>
+    Existing Schemas:
+    <select id="schema_select" class="inline-select">
+      <option>No schemas defined</option>
+    </select>
+    <input type="button" id="schema_edit_button" value="Edit" />
+    <input type="button" id="schema_delete_button" value="Delete" />
+    <input type="button" id="schema_create_button" value="Create New Schema" />
+
+    <div id="schema_form" class="initially-hidden-form">
+      <label>Name:</label>
+      <input type="text" id="schema_name" />
+
+      <!-- Templates -->
+      <label class="toggler">Templates</label>
+      <div id="schema_templates" class="togglee">
+        Existing Templates:
+        <select id="template_select" class="inline-select">
+          <option>No templates defined</option>
+        </select>
+        <input type="button" id="template_edit_button" value="Edit" />
+        <input type="button" id="template_delete_button" value="Delete" />
+        <input type="button" id="template_create_button"
+               value="Create New Template" />
+
+        <div id="template_form" class="initially-hidden-form">
+          <label>Name:</label>
+          <input type="text" id="template_name" />
+
+          <label>Text:</label>
+          <textarea id="template_text" rows="15" cols="60"></textarea>
+
+          <input class="submit-button" type="button"
+                 id="template_form_apply" value="Apply" />
+          <input class="submit-button" type="button"
+                 id="template_form_create" value="Create" />
+          <input class="submit-button" type="button"
+                 id="template_form_cancel" value="Cancel" />
+        </div>
+      </div>
+
+      <!-- Fields -->
+      <label class="toggler">Fields</label>
+      <div id="schema_fields" class="togglee">
+        Existing Fields:
+        <select id="field_select" class="inline-select">
+          <option>No fields defined</option>
+        </select>
+        <input type="button" id="field_delete_button" value="Delete" />
+        <input type="button" id="field_create_button"
+               value="Create New Field" />
+
+        <div id="field_form" class="initially-hidden-form">
+          <label>Name:</label>
+          <input type="text" id="field_name" />
+
+          <label>Type:</label>
+          <select id="field_type">
+            {% for type in field_model.TYPES %}
+              <option value="{{ type }}">{{ type|capfirst }}</option>
+            {% endfor %}
+          </select>
+
+          <label>Tip:</label>
+          <textarea id="field_tip" rows="5" cols="60"></textarea>
+
+          <input class="submit-button" type="button"
+                 id="field_form_apply" value="Apply" />
+          <input class="submit-button" type="button"
+                 id="field_form_create" value="Create" />
+          <input class="submit-button" type="button"
+                 id="field_form_cancel" value="Cancel" />
+        </div>
+      </div>
+
+      <input class="submit-button" type="button"
+             id="schema_form_apply" value="Apply" />
+      <input class="submit-button" type="button"
+             id="schema_form_create" value="Create" />
+      <input class="submit-button" type="button"
+             id="schema_form_cancel" value="Cancel" />
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+  <script type="text/javascript">
+    layermanager.resources.schemas = {
+      {% for schema in layer.schema_set %}
+        {{ schema.key.id }}: {
+          name: '{{ schema.name|EscapeForScriptString }}',
+          fields: {
+            {% for field in schema.field_set %}
+              {{ field.key.id }}: {
+                name: '{{ field.name|EscapeForScriptString }}',
+                tip: '{{ field.tip|EscapeForScriptString }}',
+                type: '{{ field.type|EscapeForScriptString }}',
+              },
+            {% endfor %}
+          },
+          templates: {
+            {% for template in schema.template_set %}
+              {{ template.key.id }}: {
+                name: '{{ template.name|EscapeForScriptString }}',
+                text: '{{ template.text|EscapeForScriptString }}',
+              },
+            {% endfor %}
+          }
+        },
+      {% endfor %}
+    };
+  </script>
+  <script type="text/javascript" src="/static/scripts/schema.js"></script>
+{% endblock %}

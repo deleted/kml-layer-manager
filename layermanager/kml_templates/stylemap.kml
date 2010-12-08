@@ -1,0 +1,12 @@
+{% spaceless %}
+<StyleMap id="id{{ style.key.id }}">
+  <Pair>
+    <key>normal</key>
+    <styleUrl>#id{{ style.key.id }}_1</styleUrl>
+  </Pair>
+  <Pair>
+    <key>highlight</key>
+    <styleUrl>#id{{ style.key.id }}_2</styleUrl>
+  </Pair>
+</StyleMap>
+{% endspaceless %}

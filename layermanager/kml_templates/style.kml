@@ -1,0 +1,73 @@
+{% spaceless %}
+<Style id="id{{ id }}">
+  {% if style.icon or style.icon_color or style.icon_scale|IsNotNone or style.icon_heading|IsNotNone %}
+  <IconStyle>
+    {% if style.icon %}
+    <Icon>
+      <href>{{ style.icon.GetURL|EscapeForXML }}</href>
+    </Icon>
+    {% endif %}
+    {% if style.icon_color %}<color>{{ style.icon_color }}</color>{% endif %}
+    {% if style.icon_scale|IsNotNone %}<scale>{{ style.icon_scale }}</scale>{% endif %}
+    {% if style.icon_heading|IsNotNone %}<heading>{{ style.icon_heading }}</heading>{% endif %}
+  </IconStyle>
+  {% endif %}
+
+  <BalloonStyle>
+    {% if style.balloon_color %}<bgColor>{{ style.balloon_color }}</bgColor>{% endif %}
+    {% if style.text_color %}<textColor>{{ style.text_color }}</textColor>{% endif %}
+    {% if style.layer.dynamic_balloons %}
+      {# A bootstrap to dynamically load the real balloon content. #}
+      <text><![CDATA[
+        <html>
+          <head></head>
+          <body>
+            <a href="#KML_LAYER_MANAGER_LINK_PLACEHOLDER;balloonFlyto"
+               id="dummy_link" style="display: none"></a>
+            <script type="text/javascript">
+              var link = document.getElementById('dummy_link');
+              var link_template = escape(link.href);
+              {# Dynamically-inserted entity ID. #}
+              var query = '?link_template=' + link_template + '&id=' + '$[id]';
+              window.location.href = '{{ balloon_url|escape }}' + query;
+            </script>
+          </body>
+        </html>
+      ]]></text>
+    {% else %}
+      {# Removes the auto-generated driving direction links in the bubble. #}
+      <text>$[description]</text>
+    {% endif %}
+  </BalloonStyle>
+
+  {% if style.label_color or style.label_scale|IsNotNone %}
+  <LabelStyle>
+    {% if style.label_color %}<color>{{ style.label_color }}</color>{% endif %}
+    {% if style.label_scale|IsNotNone %}<scale>{{ style.label_scale }}</scale>{% endif %}
+  </LabelStyle>
+  {% endif %}
+
+  {% if style.line_color or style.line_width|IsNotNone %}
+  <LineStyle>
+    {% if style.line_color %}<color>{{ style.line_color }}</color>{% endif %}
+    {% if style.line_width|IsNotNone %}<width>{{ style.line_width }}</width>{% endif %}
+  </LineStyle>
+  {% endif %}
+
+  {% if style.polygon_color or style.polygon_fill|IsNotNone or style.polygon_outline|IsNotNone %}
+  <PolyStyle>
+    {% if style.polygon_color %}<color>{{ style.polygon_color }}</color>{% endif %}
+    {% if style.polygon_fill|IsNotNone %}<fill>{{ style.polygon_fill|yesno:"1,0" }}</fill>{% endif %}
+    {% if style.polygon_outline|IsNotNone %}<outline>{{ style.polygon_outline|yesno:"1,0" }}</outline>{% endif %}
+  </PolyStyle>
+  {% endif %}
+
+  {% if style.icon %}
+  <ListStyle>
+    <ItemIcon>
+      <href>{{ style.icon.GetURL|EscapeForXML }}</href>
+    </ItemIcon>
+  </ListStyle>
+  {% endif %}
+</Style>
+{% endspaceless %}

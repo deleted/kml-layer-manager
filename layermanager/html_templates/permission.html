@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Permissions{% endblock %}
+{% block page_title %}Set Layer Permissions{% endblock %}
+
+{% block content %}
+  <form action="/permission/{{ layer.key.id }}"
+        method="post" id="permissions_form">
+    <table id="permissions_table" class="summary-table">
+      <tr>
+        <th>Email</th>
+        {% for type in permission_types %}
+          <th>{{ type.title }}</th>
+        {% endfor %}
+      </tr>
+      {% for user_permissions in permissions %}
+        <tr>
+          <td>
+            <input type="hidden" name="users"
+                   value="{{ user_permissions.email|escape }}" />
+            {{ user_permissions.email|escape }}
+          </td>
+          {% for type in permission_types %}
+            <td>
+              <input type="checkbox" class="permission-{{ type }}"
+                     name="{{ user_permissions.email|escape }}_{{ type }}"
+                     {% if user_permissions|Lookup:type %}
+                       checked="checked"
+                     {% endif %} />
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+      <tr>
+        <td><input type="button" id="permissions_new" value="Add User" /></td>
+        <td colspan="6">&nbsp;</td>
+      </tr>
+    </table>
+    <p>
+      <input type="button" class="submit-button"
+             id="permission_submit" value="Apply" />
+    </p>
+  </form>
+{% endblock %}
+
+{% block script %}
+  <script type="text/javascript">
+    layermanager.resources.permission_types = [
+      {% for type in permission_types %}
+        '{{ type|EscapeForScriptString }}',
+      {% endfor %}
+    ];
+  </script>
+  <script type="text/javascript" src="/static/scripts/permission.js"></script>
+{% endblock %}

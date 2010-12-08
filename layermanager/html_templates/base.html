@@ -1,0 +1,168 @@
+{% spaceless %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<!--
+  Copyright 2010 Google Inc.
+ 
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+ 
+      http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+  <head>
+    <title>{% block title %}Home{% endblock %} - KML Layer Manager</title>
+    <link href="/static/styles/layermanager.css" type="text/css" rel="stylesheet" />
+    {% block styles %}{% endblock %}
+  </head>
+  <body>
+    <div id="gaiabar">
+      <b>{{ username|escape }}</b>
+      |
+      {% if is_admin %}
+        {% if debug %}
+          <a href="/_ah/admin/interactive">Console</a>
+          |
+        {% endif %}
+        <a href="/test">Backend Tests</a>
+        |
+        <a href="/static/scripts/test/lib/jsunit/testRunner.html?testPage=/static/scripts/test/base_test.html&amp;autoRun=true">
+          Frontend Tests
+        </a>
+        |
+      {% endif %}
+      <a href="{{ logout_url|escape }}">Sign out</a>
+    </div>
+    <div id="gaiabar_left"></div><div id="gaiabar_right"></div>
+
+    <!-- Insert your logo here!
+    <h1>
+      <img src="" alt="KML Layer Manager" width="213" height="40" />
+    </h1>
+    -->
+
+    <ul id="sidebar">
+      <li {% if category.home %}class="active"{% endif %}>
+        <a href="/">Home</a>
+      </li>
+      <li {% if category.layer and not layer.is_saved %}
+            class="active"
+          {% endif %}>
+        <a href="/layer-form/0">Create New Layer</a>
+      </li>
+      <li class="line"></li>
+      {% for other_layer in all_layers %}
+        {% ifequal other_layer.key.id layer.key.id %}
+          <li><span id="current_layer">{{ layer.name|escape }}</span>
+            <ul>
+            {% if layer.is_saved %}
+              {% if active_permissions.manage %}
+                <li {% if category.layer %}class="active"{% endif %}>
+                  <a href="/layer-form/{{ layer.key.id }}">Layer Properties</a>
+                </li>
+              {% endif %}
+              {% if active_permissions.styles %}
+                <li {% if category.style %}class="active"{% endif %}>
+                  <a href="/style-form/{{ layer.key.id }}">Styles</a>
+                </li>
+              {% endif %}
+              {% if active_permissions.schemas %}
+                <li {% if category.schema %}class="active"{% endif %}>
+                  <a href="/schema-form/{{ layer.key.id }}">Schemas</a>
+                </li>
+              {% endif %}
+              {% if active_permissions.entities %}
+                <li {% if category.entity %}class="active"{% endif %}>
+                  <a href="/entity-form/{{ layer.key.id }}">Entities</a>
+                </li>
+                <li {% if category.link %}class="active"{% endif %}>
+                  <a href="/link-form/{{ layer.key.id }}">Links</a>
+                </li>
+                {% if not layer.auto_managed %}
+                  <li {% if category.region %}class="active"{% endif %}>
+                    <a href="/region-form/{{ layer.key.id }}">Regions</a>
+                  </li>
+                {% endif %}
+              {% endif %}
+              {% if active_permissions.manage %}
+                <li {% if category.permission %}class="active"{% endif %}>
+                  <a href="/permission-form/{{ layer.key.id }}">Permissions</a>
+                </li>
+                {% if layer.auto_managed %}
+                  <li {% if category.baker %}class="active"{% endif %}>
+                    <a href="/baker-form/{{ layer.key.id }}">Baking</a>
+                  </li>
+                {% else %}
+                  <li {% if category.folder %}class="active"{% endif %}>
+                    <a href="/folder-form/{{ layer.key.id }}">Organization</a>
+                  </li>
+                {% endif %}
+              {% endif %}
+              {% if active_permissions.resources %}
+                <li {% if category.resource %}class="active"{% endif %}>
+                  <a href="/resource-form/{{ layer.key.id }}">Resources</a>
+                </li>
+              {% endif %}
+              <li {% if category.kml %}class="active"{% endif %}>
+                <a href="/kml-form/{{ layer.key.id }}">Generate KML</a>
+              </li>
+            {% endif %}
+            </ul>
+          </li>
+        {% else %}
+          <li>
+            {% if other_layer.busy %}
+              <span class="inactive_layer">{{ other_layer.name|escape }}</span>
+            {% else %}
+              <a href="/{% if other_layer.managed %}layer{% else %}kml{% endif %}-form/{{ other_layer.key.id }}">
+                {{ other_layer.name|escape }}
+              </a>
+            {% endif %}
+          </li>
+        {% endifequal %}
+      {% endfor %}
+    </ul>
+
+    <div id="content">
+      <h3>
+        {% block page_title %}KML Layer Manager{% endblock %}
+      </h3>
+      {% if layer.busy %}
+        The layer is being modified by a batch process and cannot be edited.
+        Please try again later.
+      {% else %}
+        {% block content %}{% endblock %}
+      {% endif %}
+    </div>
+
+    <div id="footer"><!-- Insert your own footer content here! --></div>
+
+    <script type="text/javascript"
+            src="http://www.google.com/jsapi?key={% InsertJSAPIKey %}"></script>
+    <script type="text/javascript">
+      /** The main KML Layer Manager namespace. */
+      var layermanager = {};
+      /** A namespace for resources written out by templates. */
+      layermanager.resources = {};
+      /** Default layer resources. */
+      layermanager.resources.layer = {};
+      layermanager.resources.layer.id = {{ layer.key.id|default:"0" }};
+      layermanager.resources.layer.name = '{{ layer.name|EscapeForScriptString }}';
+      layermanager.resources.layer.icon = {{ layer.icon.key.id|default:"null" }};
+      layermanager.resources.layer.autoManaged =
+          {{ layer.auto_managed|yesno:"true,false" }};
+    </script>
+    <script type="text/javascript" src="/static/scripts/base.js"></script>
+    {% if not layer.busy %}
+      {% block script %}{% endblock %}
+    {% endif %}
+  </body>
+</html>
+{% endspaceless %}

@@ -1,0 +1,8 @@
+{% spaceless %}
+<LineString>
+  {% if line_string.extrude|IsNotNone %}<extrude>{{ line_string.extrude|yesno:"1,0" }}</extrude>{% endif %}
+  {% if line_string.tessellate|IsNotNone %}<tessellate>{{ line_string.tessellate|yesno:"1,0" }}</tessellate>{% endif %}
+  {% if line_string.altitude_mode|IsNotNone %}<altitudeMode>{{ line_string.altitude_mode }}</altitudeMode>{% endif %}
+  <coordinates>{{ line_string.points|FormatCoordinates:line_string.altitudes }}</coordinates>
+</LineString>
+{% endspaceless %}

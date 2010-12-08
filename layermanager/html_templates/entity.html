@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Entities{% endblock %}
+{% block page_title %}Edit Entities{% endblock %}
+
+{% block content %}
+  <table id="editor_ui_table">
+    <tr>
+      <td {% if layer.auto_managed %}style="width: 400px;"{% endif %}>
+        {% if not layer.auto_managed %}
+          Existing Entities:
+          <select id="entity_select" class="inline-select">
+            <option>No entities defined</option>
+          </select>
+          <input type="button" id="entity_edit_button" value="Edit" />
+          <input type="button" id="entity_delete_button" value="Delete" />
+        {% else %}
+          <input id="entity_select" type="hidden" />
+        {% endif %}
+        <input type="button" id="entity_create_button"
+               value="Create New Entity" />
+
+        <div id="entity_form" class="initially-hidden-form">
+          <label for="name">Name:</label>
+          <input type="text" id="name" value="" />
+
+          <label for="snippet">Snippet:</label>
+          <textarea id="snippet" rows="3" cols="50"></textarea>
+
+          <label for="style">Style:</label>
+          <select id="style">
+            <option value="">None</option>
+          </select>
+
+          <label for="region">Region:</label>
+          <select id="region">
+            <option value="">None</option>
+          </select>
+
+          <label for="template">Template:</label>
+          <select id="template">
+            <option value="">None</option>
+          </select>
+
+          {% if layer.auto_managed %}
+            <label for="priority">Priority:</label>
+            <input type="text" id="priority" value="" />
+          {% endif %}
+
+          <label>Geometries:</label>
+          <span id="geometry_summary">None</span>
+          <img src="/static/img/create.png" id="geometry_create" />
+
+          <label>Viewpoint:</label>
+          <span id="viewport_summary">None</span>
+          <img src="/static/img/delete.png" id="view_clear" />
+          <input type="hidden" id="view_latitude" value="" />
+          <input type="hidden" id="view_longitude" value="" />
+          <input type="hidden" id="view_altitude" value="" />
+          <input type="hidden" id="view_heading" value="" />
+          <input type="hidden" id="view_tilt" value="" />
+          <input type="hidden" id="view_roll" value="" />
+          <input type="hidden" id="view_range" value="" />
+          <input type="hidden" id="view_is_camera" value="" />
+
+          <label class="toggler">Schema Fields</label>
+          <div id="schema_fields" class="togglee"></div>
+
+          <input class="submit-button" type="button"
+                 id="entity_form_apply" value="Apply" />
+          <input class="submit-button" type="button"
+                 id="entity_form_create" value="Create" />
+          {% if layer.auto_managed %}
+            <input type="button" id="entity_delete_button" value="Delete" />
+          {% endif %}
+          <input class="submit-button" type="button"
+                 id="entity_form_cancel" value="Cancel" />
+        </div>
+      </td>
+      <td {% if not layer.auto_managed %}style="width: 100%;"{% endif %}>
+        <iframe id="earth" name="earth"
+                src="/earth?layer_id={{ layer.key.id }}&amp;world={{ layer.world|escape }}">
+        </iframe>
+      </td>
+    </tr>
+  </table>
+{% endblock %}
+
+{% block script %}
+  <script type="text/javascript">
+    layermanager.resources.entities = {
+      {% for entity in entities %}
+        {{ entity.key.id }}: '{{ entity.name|EscapeForScriptString }}',
+      {% endfor %}
+    };
+
+    layermanager.resources.styles = {
+      {% for style in layer.style_set %}
+        {{ style.key.id }}: '{{ style.name|EscapeForScriptString }}',
+      {% endfor %}
+    };
+
+    layermanager.resources.regions = {
+      {% for region in layer.region_set %}
+        {{ region.key.id }}: {
+          name: '{{ region.name|EscapeForScriptString }}',
+          coordinates: [{{ region.north }}, {{ region.east }},
+                        {{ region.south }}, {{ region.west }}],
+        },
+      {% endfor %}
+    };
+
+    layermanager.resources.schemas = {
+      {% for schema in layer.schema_set %}
+        {{ schema.key.id }}: {
+          name: '{{ schema.name|EscapeForScriptString }}',
+          templates: {
+            {% for template in schema.template_set %}
+              {{ template.key.id }}:
+                  '{{ template.name|EscapeForScriptString }}',
+            {% endfor %}
+          },
+          fields: {
+            {% for field in schema.field_set %}
+              {{ field.key.id }}: {
+                name: '{{ field.name|EscapeForScriptString }}',
+                tip: '{{ field.tip|EscapeForScriptString }}',
+                type: '{{ field.type|EscapeForScriptString }}'
+              },
+            {% endfor %}
+          }
+        },
+      {% endfor %}
+    };
+
+    layermanager.resources.templateSchemas = {
+      {% for schema in layer.schema_set %}
+        {% for template in schema.template_set %}
+          {{ template.key.id }}: {{ schema.key.id }},
+        {% endfor %}
+      {% endfor %}
+    };
+
+    layermanager.resources.images = {
+      {% for image in layer.GetImages|slice:":100" %}
+        {{ image.key.id }}: '{{ image.filename|EscapeForScriptString }}',
+      {% endfor %}
+    };
+
+    layermanager.resources.icons = {
+      {% for icon in layer.GetIcons %}
+        {{ icon.key.id }}: '{{ icon.filename|EscapeForScriptString }}',
+      {% endfor %}
+    };
+
+    layermanager.resources.other = {
+      {% for resource in layer.GetModels %}
+        {{ resource.key.id }}:
+            'Raw Model: {{ resource.filename|EscapeForScriptString }}',
+      {% endfor %}
+      {% for resource in layer.model_in_kmz %}
+        {{ resource.key.id }}:
+            'KMZ Model: {{ resource.filename|EscapeForScriptString }}',
+      {% endfor %}
+      {% for resource in layer.GetRawResources %}
+        {{ resource.key.id }}:
+            'Raw: {{ resource.filename|EscapeForScriptString }}',
+      {% endfor %}
+    };
+    jQuery.each(layermanager.resources.images, function(key, name) {
+      layermanager.resources.other[key] = 'Image: ' + name;
+    });
+    jQuery.each(layermanager.resources.icons, function(key, name) {
+      layermanager.resources.other[key] = 'Icon: ' + name;
+    });
+  </script>
+  <script type="text/javascript"
+          src="/static/scripts/lib/colorpicker/colorpicker.js"></script>
+  <script type="text/javascript"
+          src="/static/scripts/lib/datepicker/ui-datepicker.js"></script>
+  <script type="text/javascript" src="/static/scripts/entity.js"></script>
+{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" type="text/css"
+        href="/static/scripts/lib/colorpicker/colorpicker.css" />
+  <link rel="stylesheet" type="text/css"
+        href="/static/scripts/lib/datepicker/ui-datepicker.css" />
+{% endblock %}

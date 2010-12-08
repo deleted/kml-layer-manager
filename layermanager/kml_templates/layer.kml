@@ -1,0 +1,60 @@
+{% spaceless %}
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2"
+     xmlns:gx="http://www.google.com/kml/ext/2.2"
+     {% if layer.world %}hint="target={{ layer.world }}"{% endif %}>
+  <Document>
+    {% if layer.name %}<name>{{ layer.name|EscapeForXML }}</name>{% endif %}
+
+    {{ layer.custom_kml|default:"" }}
+
+    {% if layer.icon or layer.item_type or description %}
+      <Style>
+        {% if layer.icon or layer.item_type %}
+          <ListStyle>
+            {% if layer.icon %}
+              <ItemIcon>
+                <href>{{ layer.icon.GetURL|EscapeForXML }}</href>
+              </ItemIcon>
+            {% endif %}
+            {% if layer.item_type %}
+              <listItemType>{{ layer.item_type }}</listItemType>
+            {% endif %}
+          </ListStyle>
+        {% endif %}
+        {% if description %}
+          <BalloonStyle>
+            <text>{{ description|EscapeForXML }}</text>
+          </BalloonStyle>
+        {% endif %}
+      </Style>
+    {% endif %}
+
+    {% for style in styles %}
+      {{ style }}
+    {% endfor %}
+
+    {% for item in contents %}
+      {{ item }}
+    {% endfor %}
+
+    {% if layer.north %}
+      {# Only happens when the "layer" is actually a Division. #}
+      <Region>
+        <LatLonAltBox>
+          <north>{{ layer.north }}</north>
+          <south>{{ layer.south }}</south>
+          <east>{{ layer.east }}</east>
+          <west>{{ layer.west }}</west>
+        </LatLonAltBox>
+        <Lod>
+          <minLodPixels>{{ layer.layer.division_lod_min|default:"512" }}</minLodPixels>
+          <minFadeExtent>{{ layer.layer.division_lod_min_fade|default:"128" }}</minFadeExtent>
+          <maxLodPixels>{{ layer.layer.division_lod_max|default:"-1" }}</maxLodPixels>
+          <maxFadeExtent>{{ layer.layer.division_lod_max_fade|default:"128" }}</maxFadeExtent>
+        </Lod>
+      </Region>
+    {% endif %}
+  </Document>
+</kml>
+{% endspaceless %}

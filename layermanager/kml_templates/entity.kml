@@ -1,0 +1,37 @@
+{% spaceless %}
+<name>{{ entity.name|EscapeForXML }}</name>
+{% if entity.snippet|IsNotNone %}
+  <Snippet>{{ entity.snippet|EscapeForXML }}</Snippet>
+{% else %}
+  {# Prevent snippet from being filled by the contents of description (often HTML). #}
+  <Snippet maxLines="0" />
+{% endif %}
+{% if description %}<description>{{ description|EscapeForXML }}</description>{% endif %}
+{% if entity.style %}
+  <styleUrl>root.km{% if entity.layer.compressed %}z{% else %}l{% endif %}#id{{ entity.style.key.id }}</styleUrl>
+{% endif %}
+{% if entity.view_location|IsNotNone %}
+  {% if entity.view_is_camera %}
+    <Camera>
+      <longitude>{{ entity.view_location.lon }}</longitude>
+      <latitude>{{ entity.view_location.lat }}</latitude>
+      {% if entity.view_altitude|IsNotNone %}<altitude>{{ entity.view_altitude }}</altitude>{% endif %}
+      {% if entity.view_heading|IsNotNone %}<heading>{{ entity.view_heading }}</heading>{% endif %}
+      {% if entity.view_tilt|IsNotNone %}<tilt>{{ entity.view_tilt }}</tilt>{% endif %}
+      {% if entity.view_roll|IsNotNone %}<roll>{{ entity.view_roll }}</roll>{% endif %}
+    </Camera>
+  {% else %}
+    {% if entity.view_range|IsNotNone %}
+      <LookAt>
+        <longitude>{{ entity.view_location.lon }}</longitude>
+        <latitude>{{ entity.view_location.lat }}</latitude>
+        {% if entity.view_altitude|IsNotNone %}<altitude>{{ entity.view_altitude }}</altitude>{% endif %}
+        {% if entity.view_heading|IsNotNone %}<heading>{{ entity.view_heading }}</heading>{% endif %}
+        {% if entity.view_tilt|IsNotNone %}<tilt>{{ entity.view_tilt }}</tilt>{% endif %}
+        <range>{{ entity.view_range }}</range>
+      </LookAt>
+    {% endif %}
+  {% endif %}
+{% endif %}
+{% if entity.region|IsNotNone %}{{ entity.region.GenerateKML }}{% endif %}
+{% endspaceless %}

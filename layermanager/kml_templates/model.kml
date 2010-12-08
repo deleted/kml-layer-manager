@@ -1,0 +1,42 @@
+{% spaceless %}
+<Model>
+  {% if model.altitude_mode|IsNotNone %}<altitudeMode>{{ model.altitude_mode }}</altitudeMode>{% endif %}
+  <Location>
+    <longitude>{{ model.location.lon }}</longitude>
+    <latitude>{{ model.location.lat }}</latitude>
+    {% if model.altitude|IsNotNone %}<altitude>{{ model.altitude }}</altitude>{% endif %}
+  </Location>
+
+  {% if model.heading|IsNotNone or model.tilt|IsNotNone or model.roll|IsNotNone %}
+  <Orientation>
+    {% if model.heading|IsNotNone %}<heading>{{ model.heading }}</heading>{% endif %}
+    {% if model.tilt|IsNotNone %}<tilt>{{ model.tilt }}</tilt>{% endif %}
+    {% if model.roll|IsNotNone %}<roll>{{ model.roll }}</roll>{% endif %}
+  </Orientation>
+  {% endif %}
+
+  {% if model.scale_x|IsNotNone or model.scale_y|IsNotNone or model.scale_z|IsNotNone %}
+  <Scale>
+    {% if model.scale_x|IsNotNone %}<x>{{ model.scale_x }}</x>{% endif %}
+    {% if model.scale_y|IsNotNone %}<y>{{ model.scale_y }}</y>{% endif %}
+    {% if model.scale_z|IsNotNone %}<z>{{ model.scale_z }}</z>{% endif %}
+  </Scale>
+  {% endif %}
+
+  <Link>
+    {# Google Earth needs the .dae, perhaps because we aren't specifying a MIME type. #}
+    <href>{{ model.model.GetURL|EscapeForXML }}</href>
+  </Link>
+
+  {% if resource_map %}
+  <ResourceMap>
+    {% for resource in resource_map %}
+    <Alias>
+      <targetHref>{{ resource.1.GetURL|EscapeForXML }}</targetHref>
+      <sourceHref>{{ resource.0 }}</sourceHref>
+    </Alias>
+    {% endfor %}
+  </ResourceMap>
+  {% endif %}
+</Model>
+{% endspaceless %}

@@ -1,0 +1,7 @@
+{% spaceless %}
+<Point>
+  {% if point.extrude|IsNotNone %}<extrude>{{ point.extrude|yesno:"1,0" }}</extrude>{% endif %}
+  {% if point.altitude_mode|IsNotNone %}<altitudeMode>{{ point.altitude_mode }}</altitudeMode>{% endif %}
+  <coordinates>{{ point.location.lon }},{{ point.location.lat }},{{ point.altitude|default:"0" }}</coordinates>
+</Point>
+{% endspaceless %}

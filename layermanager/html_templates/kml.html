@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}KML Preview{% endblock %}
+{% block page_title %}Preview KML Representation{% endblock %}
+
+{% block content %}
+  <textarea id="kml_text" class="kml-loading" rows="47" cols="80"></textarea>
+  <div id="kml_download">
+    <p>
+      You can link to this layer's KML dynamically using
+      <a href="/serve/{{ layer.key.id}}/root.km{% if layer.compressed %}z{% else %}l{% endif %}">this link</a>.
+    </p>
+    <p>
+      Or you can download all the KML files and resources needed to serve this
+      layer statically using the following UNIX commands:
+      <code>
+        wget -q -O - "{{ kml_list_url }}" | xargs wget -q -t 20
+        <br />
+      </code>
+      The root KML will be named
+      <b>root.km{% if layer.compressed %}z{% else %}l{% endif %}</b>.
+    </p>
+  </div>
+{% endblock %}
+
+{% block script %}
+  <script type="text/javascript">
+    layermanager.resources.layer.compressed =
+        {{ layer.compressed|yesno:"true,false" }};
+  </script>
+  <script type="text/javascript" src="/static/scripts/kml.js"></script>
+{% endblock %}

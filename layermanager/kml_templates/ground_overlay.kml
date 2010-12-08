@@ -1,0 +1,25 @@
+{% spaceless %}
+<GroundOverlay id="id{{ id }}">
+  {{ feature }}
+  {% if ground_overlay.color|IsNotNone %}<color>{{ ground_overlay.color }}</color>{% endif %}
+  {% if ground_overlay.draw_order|IsNotNone %}<drawOrder>{{ ground_overlay.draw_order }}</drawOrder>{% endif %}
+  <Icon>
+    <href>{{ ground_overlay.image.GetURL|EscapeForXML }}</href>
+  </Icon>
+  {% if ground_overlay.altitude|IsNotNone %}<altitude>{{ ground_overlay.altitude }}</altitude>{% endif %}
+  {% if ground_overlay.altitude_mode|IsNotNone %}<altitudeMode>{{ ground_overlay.altitude_mode }}</altitudeMode>{% endif %}
+  {% if ground_overlay.is_quad %}
+    <gx:LatLonQuad>
+      <coordinates>{{ ground_overlay.corners|slice:":4"|FormatCoordinates }}</coordinates>
+    </gx:LatLonQuad>
+  {% else %}
+    <LatLonBox>
+      <north>{{ ground_overlay.north }}</north>
+      <south>{{ ground_overlay.south }}</south>
+      <east>{{ ground_overlay.east }}</east>
+      <west>{{ ground_overlay.west }}</west>
+      {% if ground_overlay.rotation|IsNotNone %}<rotation>{{ ground_overlay.rotation }}</rotation>{% endif %}
+    </LatLonBox>
+  {% endif %}
+</GroundOverlay>
+{% endspaceless %}

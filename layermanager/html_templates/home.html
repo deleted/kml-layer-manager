@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+{% block page_title %}Welcome to the KML Layer Manager{% endblock %}
+
+{% block content %}
+<div id="homepage">
+  <p>
+    KML Layer Manager is an application for managing and editing
+    Google Earth layers.
+  </p>
+  <p>
+    Its features include the web GUI you see before you, including a
+    3D geometry editor based on the Google Earth browser plugin, a
+    powerful KML generator, and a rich and intuitive API to script and
+    automate repetitive tasks.
+  </p>
+  <p>
+    The data model for this content management system is derived from
+    KML, although some simplifications and changes had to be applied.
+    Independent Layer objects each can contain shared resources,
+    styles, balloon templates, and regions, as well as folders, links
+    and, last but certainly not least, entities with their geometries.
+  </p>
+  <p>
+    For small layers, all of the above objects can be created by
+    hand. For large layers, on the other hand, you can instead create
+    the styles, schemas and templates through this GUI, and then write
+    a script to generate a large number of resources and entities to
+    populate the layer.
+  </p>
+</div>
+{% endblock %}

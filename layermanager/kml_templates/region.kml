@@ -1,0 +1,21 @@
+{% spaceless %}
+<Region id="id{{ region.key.id }}">
+  <LatLonAltBox>
+    <north>{{ region.north }}</north>
+    <south>{{ region.south }}</south>
+    <east>{{ region.east }}</east>
+    <west>{{ region.west }}</west>
+    {% if region.min_altitude|IsNotNone %}<minAltitude>{{ region.min_altitude }}</minAltitude>{% endif %}
+    {% if region.max_altitude|IsNotNone %}<maxAltitude>{{ region.max_altitude }}</maxAltitude>{% endif %}
+    {% if region.altitude_mode|IsNotNone %}<altitudeMode>{{ region.altitude_mode }}</altitudeMode>{% endif %}
+  </LatLonAltBox>
+  {% if region.lod_min|IsNotNone %}
+    <Lod>
+      <minLodPixels>{{ region.lod_min }}</minLodPixels>
+      {% if region.lod_max|IsNotNone %}<maxLodPixels>{{ region.lod_max }}</maxLodPixels>{% endif %}
+      {% if region.lod_fade_min|IsNotNone %}<minFadeExtent>{{ region.lod_fade_min }}</minFadeExtent>{% endif %}
+      {% if region.lod_fade_max|IsNotNone %}<maxFadeExtent>{{ region.lod_fade_max }}</maxFadeExtent>{% endif %}
+    </Lod>
+  {% endif %}
+</Region>
+{% endspaceless %}

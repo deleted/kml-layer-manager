@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Links{% endblock %}
+{% block page_title %}Edit Links{% endblock %}
+
+{% block content %}
+  Existing Links:
+  <select id="link_select" class="inline-select">
+    <option>No links defined</option>
+  </select>
+  <input type="button" id="link_edit_button" value="Edit" />
+  <input type="button" id="link_delete_button" value="Delete" />
+  <input type="button" id="link_create_button" value="Create New Link" />
+
+  <div id="link_form" class="initially-hidden-form">
+    <label for="name">Name:</label>
+    <input type="text" id="name" />
+
+    <label for="url">URL:</label>
+    <input type="text" id="url" />
+
+    <label for="description">Description:</label>
+    <textarea id="description" rows="5" cols="50"></textarea>
+
+    <label for="icon">Icon:</label>
+    <select id="icon" class="icon-selector">
+      <option value="">None</option>
+      {% for icon in layer.GetIcons %}
+        <option value="{{ icon.key.id }}">{{ icon.filename|escape }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="region">Region:</label>
+    <select id="region">
+      <option>None</option>
+    </select>
+
+    <label for="item_type">List Item Type:</label>
+    <select id="item_type">
+      <option value="">Default</option>
+      {% for item_type in layer.CONTAINER_TYPES %}
+        <option value="{{ item_type }}">
+          {{ layer.CONTAINER_TYPES|Lookup:item_type }}
+        </option>
+      {% endfor %}
+    </select>
+
+    <label for="custom_kml">Custom KML:</label>
+    <textarea id="custom_kml" rows="12" cols="60"></textarea>
+
+    <input class="submit-button" type="button"
+           id="link_form_apply" value="Apply" />
+    <input class="submit-button" type="button"
+           id="link_form_create" value="Create" />
+    <input class="submit-button" type="button"
+           id="link_form_cancel" value="Cancel" />
+  </div>
+{% endblock %}
+
+{% block script %}
+  <script type="text/javascript">
+    layermanager.resources.links = {
+      {% for link in layer.link_set %}
+        {{ link.key.id }}: {
+          name: '{{ link.name|EscapeForScriptString }}',
+          url: '{{ link.url|EscapeForScriptString }}',
+          description: '{{ link.description|EscapeForScriptString }}',
+          icon: {{ link.icon.key.id|default:"null" }},
+          region: {{ link.region.key.id|default:"null" }},
+          item_type: '{{ link.item_type|EscapeForScriptString }}',
+          custom_kml: '{{ link.custom_kml|EscapeForScriptString }}'
+        },
+      {% endfor %}
+    };
+    layermanager.resources.regions = {
+      {% for region in layer.region_set %}
+        {{ region.key.id }}: {
+          name: '{{ region.name|EscapeForScriptString }}',
+          coordinates: [{{ region.north }}, {{ region.east }},
+                        {{ region.south }}, {{ region.west }}],
+        },
+      {% endfor %}
+    };
+  </script>
+  <script type="text/javascript" src="/static/scripts/link.js"></script>
+{% endblock %}

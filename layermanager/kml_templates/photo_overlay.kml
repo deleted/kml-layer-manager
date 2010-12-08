@@ -1,0 +1,31 @@
+{% spaceless %}
+<PhotoOverlay id="id{{ id }}">
+  {{ feature }}
+  {% if photo_overlay.color|IsNotNone %}<color>{{ photo_overlay.color }}</color>{% endif %}
+  {% if photo_overlay.draw_order|IsNotNone %}<drawOrder>{{ photo_overlay.draw_order }}</drawOrder>{% endif %}
+  <Icon>
+    <href>{{ photo_overlay.image.GetURL|EscapeForXML }}</href>
+  </Icon>
+  {% if photo_overlay.rotation|IsNotNone %}<rotation>{{ photo_overlay.rotation }}</rotation>{% endif %}
+  <ViewVolume>
+    <leftFov>{{ photo_overlay.view_left }}</leftFov>
+    <rightFov>{{ photo_overlay.view_right }}</rightFov>
+    <bottomFov>{{ photo_overlay.view_bottom }}</bottomFov>
+    <topFov>{{ photo_overlay.view_top }}</topFov>
+    <near>{{ photo_overlay.view_near }}</near>
+  </ViewVolume>
+  <Point>
+    <coordinates>{{ photo_overlay.location.lon }},{{ photo_overlay.location.lat }},{{ photo_overlay.altitude|default:"0" }}</coordinates>
+  </Point>
+  {% ifnotequal photo_overlay.shape "rectangle" %}<shape>{{ photo_overlay.shape }}</shape>{% endifnotequal %}
+
+  {% if photo_overlay.pyramid_tile_size and photo_overlay.pyramid_height and photo_overlay.pyramid_width and photo_overlay.pyramid_grid_origin %}
+  <ImagePyramid>
+    <tileSize>{{ photo_overlay.pyramid_tile_size }}</tileSize>
+    <maxWidth>{{ photo_overlay.pyramid_width }}</maxWidth>
+    <maxHeight>{{ photo_overlay.pyramid_height }}</maxHeight>
+    <gridOrigin>{{ photo_overlay.pyramid_grid_origin }}</gridOrigin>
+  </ImagePyramid>
+  {% endif %}
+</PhotoOverlay>
+{% endspaceless %}

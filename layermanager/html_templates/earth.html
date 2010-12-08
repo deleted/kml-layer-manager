@@ -1,0 +1,102 @@
+{% spaceless %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <title>Earth Editor</title>
+    <link rel="stylesheet" type="text/css"
+          href="/static/scripts/lib/colorpicker/colorpicker.css" />
+    <link rel="stylesheet" type="text/css" href="/static/styles/layermanager.css" />
+    <link rel="stylesheet" type="text/css" href="/static/styles/earth.css" />
+    <script type="text/javascript"
+            src="http://www.google.com/jsapi?key={% InsertJSAPIKey %}"></script>
+    <script type="text/javascript"
+            src="/static/scripts/lib/earth/earth-extensions.js"></script>
+    <script type="text/javascript">var layermanager = {};</script>
+    <script type="text/javascript" src="/static/scripts/base.js"></script>
+    <script type="text/javascript" src="/static/scripts/earth.js"></script>
+    <script type="text/javascript"
+            src="/static/scripts/lib/colorpicker/colorpicker.js"></script>
+  </head>
+  <body>
+    <div id="viewport"></div>
+    <div id="panel">
+      <div id="error"></div>
+      <div id="loader"></div>
+      <div id="picking_message">Click on an entity to edit.</div>
+      <div id="region_message">
+        Use the handles to define region boundaries.
+      </div>
+      <div id="entity_editor">
+        <table id="info">
+          <tr>
+            <td>
+              Latitude: <span id="info_latitude">0</span>
+            </td>
+            <td>
+              Longitude: <span id="info_longitude">0</span>
+            </td>
+            <td>
+              Altitude: <span id="info_altitude">0</span>
+            </td>
+          </tr>
+        </table>
+        <table id="controls">
+          <tr>
+            <td>
+              <label for="geometry_type">Geometry:</label>
+            </td>
+            <td>
+              <select id="geometry_type">
+                <option value="Point">Point</option>
+                <option value="LineString">Line String</option>
+                <option value="Polygon">Polygon</option>
+                <option value="Model">Model</option>
+                <option value="GroundOverlay">Ground Overlay</option>
+                <!--option value="PhotoOverlay">Photo Overlay</option-->
+              </select>
+            </td>
+            <td>
+              <label for="resource">Resource:</label>
+            </td>
+            <td>
+              <select id="resource">
+                <option value="">None</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="color">Color:</label>
+            </td>
+            <td>
+              <input type="text" id="color" />
+            </td>
+            <td>
+              <input type="checkbox" id="tessellate" />
+              <label for="tessellate">Tessellate</label>
+            </td>
+            <td>
+              <input type="checkbox" id="extrude" />
+              <label for="extrude">Extrude</label>
+            </td>
+          </tr>
+        </table>
+        <table id="buttons">
+          <tr>
+            <td>
+              <input type="button" id="apply" value="Apply" />
+            </td>
+            <td>
+              <input type="button" id="save_geometry" value="Set Geometry" />
+            </td>
+            <td>
+              <input type="button" id="save_viewport" value="Set View" />
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>
+{% endspaceless %}

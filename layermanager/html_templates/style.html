@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block title %}Styles{% endblock %}
+{% block page_title %}Edit Styles{% endblock %}
+
+{% block content %}
+  Existing Styles:
+  <select id="style_select" class="inline-select">
+    <option>No styles defined</option>
+  </select>
+  <input type="button" id="style_edit_button" value="Edit" />
+  <input type="button" id="style_delete_button" value="Delete" />
+  <input type="button" id="style_create_button" value="Create New Style" />
+
+  <div id="style_form" class="initially-hidden-form">
+    <table id="style_form_table">
+      <tr>
+        <td></td>
+        <td>Name:</td>
+        <td><input type="text" id="style_name" /></td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="icon_enable" /></td>
+        <td>Icon:</td>
+        <td>
+          <select id="icon" class="icon-selector">
+            <option value="">None</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="icon_color_enable" /></td>
+        <td>Icon Color:</td>
+        <td>
+          <input type="text" id="icon_color" class="color-selector" />
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="icon_scale_enable" /></td>
+        <td>Icon Scale:</td>
+        <td>
+          <input type="text" id="icon_scale"
+                 class="float-field" data-default="1.0" />
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="icon_heading_enable" /></td>
+        <td>Icon Heading:</td>
+        <td>
+          <input type="text" id="icon_heading"
+                 class="float-field" data-default="0.0" />
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="label_color_enable" /></td>
+        <td>Label Color:</td>
+        <td>
+          <input type="text" id="label_color" class="color-selector" />
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="label_scale_enable" /></td>
+        <td>Label Scale:</td>
+        <td>
+          <input type="text" id="label_scale"
+                 class="float-field" data-default="1.0" />
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="balloon_color_enable" /></td>
+        <td>Balloon Color:</td>
+        <td>
+          <input type="text" id="balloon_color" class="color-selector" />
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="text_color_enable" /></td>
+        <td>Balloon Text Color:</td>
+        <td>
+          <input type="text" id="text_color" class="color-selector" />
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="line_color_enable" /></td>
+        <td>Line Color:</td>
+        <td>
+          <input type="text" id="line_color" class="color-selector" />
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="line_width_enable" /></td>
+        <td>Line Width:</td>
+        <td>
+          <input type="text" id="line_width"
+                 class="integer-field" data-default="1" />
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="polygon_color_enable" /></td>
+        <td>Polygon Color:</td>
+        <td>
+          <input type="text" id="polygon_color" class="color-selector" />
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="polygon_fill_enable" /></td>
+        <td colspan="2">Polygon Fill</td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="polygon_outline_enable" /></td>
+        <td colspan="2">Polygon Outline</td>
+      </tr>
+
+      <tr>
+        <td><input type="checkbox" id="has_highlight_enable" /></td>
+        <td colspan="2" style="font-weight: bold">Highlight Overrides</td>
+      </tr>
+
+      <tr>
+        <td><input type="checkbox" id="highlight_icon_enable" /></td>
+        <td>Icon:</td>
+        <td>
+          <select id="highlight_icon" class="icon-selector">
+            <option value="">None</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="highlight_icon_color_enable" /></td>
+        <td>Icon Color:</td>
+        <td>
+          <input type="text" id="highlight_icon_color" class="color-selector" />
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="highlight_icon_scale_enable" /></td>
+        <td>Icon Scale:</td>
+        <td>
+          <input type="text" id="highlight_icon_scale"
+                 class="float-field" data-default="1.0" />
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="highlight_icon_heading_enable" /></td>
+        <td>Icon Heading:</td>
+        <td>
+          <input type="text" id="highlight_icon_heading"
+                 class="float-field" data-default="0.0" />
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="highlight_label_color_enable" /></td>
+        <td>Label Color:</td>
+        <td>
+          <input type="text" id="highlight_label_color"
+                 class="color-selector" />
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="highlight_label_scale_enable" /></td>
+        <td>Label Scale:</td>
+        <td>
+          <input type="text" id="highlight_label_scale"
+                 class="float-field" data-default="1.0" />
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="highlight_balloon_color_enable" /></td>
+        <td>Balloon Color:</td>
+        <td>
+          <input type="text" id="highlight_balloon_color"
+                 class="color-selector" />
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="highlight_text_color_enable" /></td>
+        <td>Balloon Text Color:</td>
+        <td>
+          <input type="text" id="highlight_text_color" class="color-selector" />
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="highlight_line_color_enable" /></td>
+        <td>Line Color:</td>
+        <td>
+          <input type="text" id="highlight_line_color" class="color-selector" />
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="highlight_line_width_enable" /></td>
+        <td>Line Width:</td>
+        <td>
+          <input type="text" id="highlight_line_width"
+                 class="integer-field" data-default="1" />
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="highlight_polygon_color_enable" /></td>
+        <td>Polygon Color:</td>
+        <td>
+          <input type="text" id="highlight_polygon_color"
+                 class="color-selector" />
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="highlight_polygon_fill_enable" /></td>
+        <td colspan="2">Polygon Fill</td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="highlight_polygon_outline_enable" /></td>
+        <td colspan="2">Polygon Outline</td>
+      </tr>
+    </table>
+
+    <br />
+
+    <input class="submit-button" type="button"
+           id="style_form_apply" value="Apply" />
+    <input class="submit-button" type="button"
+           id="style_form_create" value="Create" />
+    <input class="submit-button" type="button"
+           id="style_form_cancel" value="Cancel" />
+  </div>
+{% endblock %}
+
+{% block script %}
+  <script type="text/javascript">
+    layermanager.resources.styles = {
+      {% for style in layer.style_set %}
+        {{ style.key.id }}: {
+          name: '{{ style.name|EscapeForScriptString }}',
+          icon: '{{ style.icon.key.id|EscapeForScriptString }}',
+          icon_color: '{{ style.icon_color|EscapeForScriptString }}',
+          icon_scale: {{ style.icon_scale|default_if_none:"null" }},
+          icon_heading: {{ style.icon_heading|default_if_none:"null" }},
+          label_color: '{{ style.label_color|EscapeForScriptString }}',
+          label_scale: {{ style.label_scale|default_if_none:"null" }},
+          balloon_color: '{{ style.balloon_color|EscapeForScriptString }}',
+          text_color: '{{ style.text_color|EscapeForScriptString }}',
+          line_color: '{{ style.line_color|EscapeForScriptString }}',
+          line_width: {{ style.line_width|default_if_none:"null" }},
+          polygon_color: '{{ style.polygon_color|EscapeForScriptString }}',
+          polygon_fill: {{ style.polygon_fill|yesno:"true,false,null" }},
+          polygon_outline: {{ style.polygon_outline|yesno:"true,false,null" }},
+          has_highlight: {{ style.has_highlight|yesno:"true,false" }},
+          highlight_icon:
+              '{{ style.highlight_icon.key|EscapeForScriptString }}',
+          highlight_icon_color:
+              '{{ style.highlight_icon_color|EscapeForScriptString }}',
+          highlight_icon_scale:
+              {{ style.highlight_icon_scale|default_if_none:"null" }},
+          highlight_icon_heading:
+              {{ style.highlight_icon_heading|default_if_none:"null" }},
+          highlight_label_color:
+              '{{ style.highlight_label_color|EscapeForScriptString }}',
+          highlight_label_scale:
+              {{ style.highlight_label_scale|default_if_none:"null" }},
+          highlight_balloon_color:
+              '{{ style.highlight_balloon_color|EscapeForScriptString }}',
+          highlight_text_color:
+              '{{ style.highlight_text_color|EscapeForScriptString }}',
+          highlight_line_color:
+              '{{ style.highlight_line_color|EscapeForScriptString }}',
+          highlight_line_width:
+              {{ style.highlight_line_width|default_if_none:"null" }},
+          highlight_polygon_color:
+              '{{ style.highlight_polygon_color|EscapeForScriptString }}',
+          highlight_polygon_fill:
+              {{ style.highlight_polygon_fill|yesno:"true,false,null" }},
+          highlight_polygon_outline:
+              {{ style.highlight_polygon_outline|yesno:"true,false,null" }}
+        },
+      {% endfor %}
+    };
+    layermanager.resources.icons = {
+      {% for icon in layer.GetIcons %}
+        "{{ icon.key.id }}": "{{ icon.filename|EscapeForScriptString }}",
+      {% endfor %}
+    };
+  </script>
+  <script type="text/javascript"
+          src="/static/scripts/lib/colorpicker/colorpicker.js"></script>
+  <script type="text/javascript" src="/static/scripts/style.js"></script>
+{% endblock %}
+{% block styles %}
+  <link rel="stylesheet" media="screen" type="text/css"
+        href="/static/scripts/lib/colorpicker/colorpicker.css" />
+{% endblock %}

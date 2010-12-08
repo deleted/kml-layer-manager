@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Resources{% endblock %}
+{% block page_title %}Manage Resources{% endblock %}
+
+{% block content %}
+  Resource Type:
+  <select id="resource_list_type" class="inline-select">
+    <option value="icon">Icons</option>
+    {% if not layer.auto_managed %}
+      <option value="image">Images</option>
+      <option value="model">Raw 3D Models</option>
+      <option value="model_in_kmz">3D Models in KMZ</option>
+      <option value="raw">Other</option>
+    {% endif %}
+  </select>
+
+  <div id="resource_list"></div>
+
+  <div id="resource_form">
+    <div class="toggler">Create New Resource</div>
+    <div class="togglee">
+      <form id="upload_form" action="{{ upload_url|escape }}"
+            method="post" enctype="multipart/form-data">
+        <p>
+          <label for="source">Data:</label>
+          <select id="source" class="inline-select">
+            <option value="file">Upload</option>
+            <option value="url">URL</option>
+          </select>
+          <input type="file" id="file" name="file" />
+          <input type="text" id="url" name="url" />
+
+          <label for="source">Filename:</label>
+          <input type="text" id="filename" name="filename" />
+
+          <label for="type">Type:</label>
+          <select id="type" name="type">
+            <option value="image">Image</option>
+            <option value="icon">Icon</option>
+            <option value="model">Raw 3D Model</option>
+            <option value="model_in_kmz">3D Model in KMZ</option>
+            <option value="raw">Other</option>
+          </select>
+
+          <br />
+          <input type="button" class="submit-button"
+                 id="create_button" value="Create" />
+        </p>
+      </form>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+  <script type="text/javascript">
+    layermanager.resources.files = {
+      icon: {
+        {% for icon in layer.GetIcons %}
+          {{ icon.key.id }}: '{{ icon.filename|EscapeForScriptString }}',
+        {% endfor %}
+      },
+      image: {
+        {% for image in layer.GetImages|slice:":200" %}
+          {{ image.key.id }}: '{{ image.filename|EscapeForScriptString }}',
+        {% endfor %}
+      },
+      model: {
+        {% for model in layer.GetModels %}
+          {{ model.key.id }}: '{{ model.filename|EscapeForScriptString }}',
+        {% endfor %}
+      },
+      model_in_kmz: {
+        {% for model in layer.GetModelsInKMZ %}
+          {{ model.key.id }}: '{{ model.filename|EscapeForScriptString }}',
+        {% endfor %}
+      },
+      raw: {
+        {% for model in layer.GetRawResources %}
+          {{ model.key.id }}: '{{ model.filename|EscapeForScriptString }}',
+        {% endfor %}
+      }
+    };
+  </script>
+  <script type="text/javascript"
+          src="/static/scripts/lib/jquery.form.js"></script>
+  <script type="text/javascript" src="/static/scripts/resource.js"></script>
+{% endblock %}

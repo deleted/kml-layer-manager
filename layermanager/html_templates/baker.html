@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Layer Baking{% endblock %}
+{% block page_title %}Bake a Layer{% endblock %}
+
+{% block content %}
+  {% if layer.busy %}
+    The layer is being modified by a batch process. Please try again later.
+  {% else %}
+    {% if layer.auto_managed %}
+      <p>
+        Baking, or Auto Regionation, is a process of splitting a large,
+        auto-managed layer into small subdivisions that can be interlinked and
+        efficiently served as separate files. Baking is a relatively slow
+        batch operation, and once started, the layer becomes frozen until it
+        is complete. Baking cannot be interrupted.
+      </p>
+      {% if layer.baked %}
+        <p>
+          <b>
+            NOTE: This layer has been previously baked. Rebaking will result in
+            improved performance only if many entities have been added, removed
+            or moved, or if the Entities Per Region setting has been changed.
+          </b>
+        </p>
+      {% endif %}
+      <input type="button" id="bake" value="Bake Layer" />
+      <p id="bake_message"></p>
+    {% else %}
+      Baking is not applicable to non-auto-managed layers.
+    {% endif %}
+  {% endif %}
+{% endblock %}
+
+
+{% block script %}
+  <script type="text/javascript" src="/static/scripts/baker.js"></script>
+{% endblock %}
+

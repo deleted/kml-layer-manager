@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Regions{% endblock %}
+{% block page_title %}Edit Regions{% endblock %}
+
+{% block content %}
+  {% if layer.auto_managed %}
+    Auto-managed layers cannot be regionated manually.
+  {% else %}
+    <table id="editor_ui_table">
+      <tr>
+        <td>
+          Existing Regions:
+          <select id="region_select" class="inline-select">
+            <option>No regions defined</option>
+          </select>
+          <input type="button" id="region_edit_button" value="Edit" />
+          <input type="button" id="region_delete_button" value="Delete" />
+          <input type="button" id="region_create_button"
+                 value="Create New Region" />
+
+          <div id="region_form" class="initially-hidden-form">
+            <table>
+              <tr>
+                <td>
+                  <label for="name">Name:</label>
+                  <input type="text" id="name" />
+
+                  <label for="north">North:</label>
+                  <input type="text" id="north" class="float-field" />
+
+                  <label for="south">South:</label>
+                  <input type="text" id="south" class="float-field" />
+
+                  <label for="east">East:</label>
+                  <input type="text" id="east" class="float-field" />
+
+                  <label for="west">West:</label>
+                  <input type="text" id="west" class="float-field" />
+                </td>
+                <td>
+                  <label for="min_altitude">Minimum Altitude:</label>
+                  <input type="text" id="min_altitude" class="float-field" />
+
+                  <label for="max_altitude">Maximum Altitude:</label>
+                  <input type="text" id="max_altitude" class="float-field" />
+
+                  <label for="altitude_mode">Altitude Mode:</label>
+                  <select id="altitude_mode">
+                    <option value="relativeToGround">Relative to Ground</option>
+                    <option value="clampToGround">Clamp to Ground</option>
+                    <option value="absolute">Absolute</option>
+                  </select>
+                </td>
+                <td>
+                  <label for="lod_min">Minimum LOD (pixels):</label>
+                  <input type="text" id="lod_min" class="float-field" />
+
+                  <label for="lod_max">Maximum LOD (pixels):</label>
+                  <input type="text" id="lod_max" class="float-field" />
+
+                  <label for="lod_fade_min">Minimum LOD Fade (pixels):</label>
+                  <input type="text" id="lod_fade_min" class="float-field" />
+
+                  <label for="lod_fade_max">Maximum LOD Fade (pixels):</label>
+                  <input type="text" id="lod_fade_max" class="float-field" />
+                </td>
+              </tr>
+            </table>
+
+            <input class="submit-button" type="button"
+                   id="region_form_apply" value="Apply" />
+            <input class="submit-button" type="button"
+                   id="region_form_create" value="Create" />
+            <input class="submit-button" type="button"
+                   id="region_form_cancel" value="Cancel" />
+          </div>
+        </td>
+        <td>
+          <iframe id="earth" name="earth"
+                  src="/earth?world={{ layer.world|escape }}"></iframe>
+        </td>
+      </tr>
+    </table>
+  {% endif %}
+{% endblock %}
+
+{% block script %}
+  {% if not layer.auto_managed %}
+    <script type="text/javascript">
+      layermanager.resources.regions = {
+        {% for region in layer.region_set %}
+          {{ region.key.id }}: {
+            name: '{{ region.name|EscapeForScriptString }}',
+            north: {{ region.north }},
+            south: {{ region.south }},
+            west: {{ region.west }},
+            east: {{ region.east }},
+            min_altitude: {{ region.min_altitude|default:"null" }},
+            max_altitude: {{ region.max_altitude|default:"null" }},
+            altitude_mode: '{{ region.altitude_mode|EscapeForScriptString }}',
+            lod_min: {{ region.lod_min|default:"null" }},
+            lod_max: {{ region.lod_max|default:"null" }},
+            lod_fade_min: {{ region.lod_fade_min|default:"null" }},
+            lod_fade_max: {{ region.lod_fade_max|default:"null" }}
+          },
+        {% endfor %}
+      };
+    </script>
+    <script type="text/javascript" src="/static/scripts/region.js"></script>
+  {% endif %}
+{% endblock %}

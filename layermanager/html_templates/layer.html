@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Layer Properties{% endblock %}
+{% block page_title %}Edit Layer Properties{% endblock %}
+
+{% block content %}
+  <label for="name">Name:</label>
+  <input type="text" id="name" value="{{ layer.name|escape }}" />
+
+  <label for="description">Description:</label>
+  <textarea id="description" rows="5" cols="50">{{ layer.description|default:""|escape }}</textarea>
+
+  <label for="icon">Icon:</label>
+  <select id="icon" class="icon-selector">
+    <option value="">None</option>
+    {% for icon in layer.GetIcons %}
+      <option value="{{ icon.key.id }}"
+              {% ifequal icon.key.id layer.icon.key.id %}
+                selected="selected"
+              {% endifequal %}>
+        {{ icon.filename|escape }}
+      </option>
+    {% endfor %}
+  </select>
+
+  <label for="world">World:</label>
+  <select id="world">
+    {% for world in layer_model.WORLDS %}
+      <option value="{{ world }}"
+              {% ifequal layer.world world %}
+                selected="selected"
+              {% endifequal %}>
+        {{ world.title }}
+      </option>
+    {% endfor %}
+  </select>
+
+  <label for="item_type">Contents Visibility Control:</label>
+  <select id="item_type">
+    <option value="" {% if not layer.item_type %}selected{% endif %}>
+      Default
+    </option>
+    {% for item_type in layer_model.CONTAINER_TYPES %}
+      <option value="{{ item_type }}"
+              {% ifequal layer.item_type item_type %}
+                selected="selected"
+              {% endifequal %}>
+        {{ layer_model.CONTAINER_TYPES|Lookup:item_type }}
+      </option>
+    {% endfor %}
+  </select>
+
+  <label>Optimizations:</label>
+  <input type="checkbox" id="auto_managed" value="1"
+         {% if layer.auto_managed %}checked{% endif %} />
+  <span>Auto Managed</span>
+  <input type="checkbox" id="dynamic_balloons" value="1"
+         {% if layer.dynamic_balloons %}checked{% endif %} />
+  <span>Dynamic Balloons</span>
+  <input type="checkbox" id="compressed" value="1"
+         {% if not layer or layer.compressed %}checked{% endif %} />
+  <span>Served Compressed</span>
+  <input type="checkbox" id="uncacheable" value="1"
+         {% if layer.uncacheable %}checked{% endif %} />
+  <span>Uncacheable</span>
+
+  <div id="regionation_settings">
+    <label for="division_size">Entities Per Region:</label>
+    <input type="text" id="division_size"
+          value="{{ layer.division_size|default:"100" }}" />
+
+    <label for="division_lod_min">Lower Visibility Limit (px):</label>
+    <input type="text" id="division_lod_min"
+          value="{{ layer.division_lod_min|default:"512" }}" />
+
+    <label for="division_lod_min_fade">Fade-in Extent (px):</label>
+    <input type="text" id="division_lod_min_fade"
+          value="{{ layer.division_lod_min_fade|default:"128" }}" />
+
+    <label for="division_lod_max">Upper Visibility Limit (px):</label>
+    <input type="text" id="division_lod_max"
+          value="{{ layer.division_lod_max|default:"" }}" />
+
+    <label for="division_lod_max_fade">Fade-out Extent (px):</label>
+    <input type="text" id="division_lod_max_fade"
+          value="{{ layer.division_lod_max_fade|default:"" }}" />
+  </div>
+
+  <label for="custom_kml">Custom KML:</label>
+  <textarea id="custom_kml" rows="12" cols="60">{{ layer.custom_kml|default:""|escape }}</textarea>
+
+  <input class="submit-button" type="button" id="layer_apply" value="Apply" />
+  <input class="submit-button" type="button" id="layer_delete" value="Delete" />
+  <input class="submit-button" type="button" id="layer_create" value="Create" />
+{% endblock %}
+
+{% block script %}
+  <script type="text/javascript" src="/static/scripts/layer.js"></script>
+{% endblock %}
