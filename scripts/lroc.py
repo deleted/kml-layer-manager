@@ -244,7 +244,7 @@ def lroc_style(layer_id):
     return style
 
 
-def try_create_entities(cms, layer_id, entities, retries = 3):
+def try_create_entities(cms, layer_id, entities, retries = 5):
     print "Uploading %d entities..." % len(entities),
     while retries > 0:
         try:
