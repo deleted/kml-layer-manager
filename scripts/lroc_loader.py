@@ -13,7 +13,8 @@ when I extracted the more general interface in to loader_base.py
 class LrocNacProduct(Observation):
     def __init__(self, tablerow):
        tablerow.__dict__ = Product.normalize_corner_names(tablerow.__dict__)
-       Product.__init__(self, tablerow)
+       Observation.__init__(self, tablerow)
+       self.observation_id = self.product_id[:-2]
 
     @property
     def url(self):

@@ -66,7 +66,8 @@ class Observation(object):
         self._longitude_properties = [prop for prop in ("%s_longitude" % corner for corner in CORNERS)]
         self._fix_latitudes()
         self._fix_longitudes()
-        self.observation_id = self.product_id[:-2]
+        if hasattr(self, 'product_id') and not hasattr(self,'observation_id'):
+            self.observation_id = self.product_id
 
     @classmethod
     def normalize_corner_names(klass, property_dict):
