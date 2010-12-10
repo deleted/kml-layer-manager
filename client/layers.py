@@ -87,6 +87,22 @@ class CmsObject(object):
                 new_cms_obj.save()
                 return [new_cms_obj]
 
+    @classmethod
+    def get_first_by_name(klass, name, layer_id=None, cms=get_default_client()):
+        kind = klass.kind
+        if not layer_id and kind != 'layer':
+            raise Exception("layer id required")
+        print "Fetching existing layer %s..." % name,
+        ids = cms.List(kind)
+        i = 0
+        for item_id in ids:
+            item = cms.Query(kind, item_id, layer_id, nocontents='true')
+            if item['name'] == name:
+                print "Done."
+                return item_id
+        else:
+            raise Exception('%s "%s" not found.' % (kind, name))
+
     def __init__(self, layer_id=0, **kwargs):
         kind = self.kind
         self._property_names = lmc.KNOWN_CMS_ARGUMENTS[kind]
