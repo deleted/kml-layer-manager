@@ -3,10 +3,11 @@ import loader_base
 from loader_base import Observation, LayerLoader
 
 """
-This module probably won't work as written.
-For now, to load LROC data, use lroc.py instead.  It does logically the same thing.
-This was created to hold the LROC specific logic 
-when I extracted the more general interface in to loader_base.py
+This module is completely untested and probably won't work as written.
+To load LROC data, use lroc.py instead.  It does logically the same thing.
+
+This file was created to hold the LROC specific logic 
+when I extracted the more general-purpose loading logic from lroc.py into loader_base.py
 """
 
 
