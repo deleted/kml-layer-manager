@@ -1,0 +1,45 @@
+Copyright 2010 Google Inc.
+All rights reserved.
+
+KML Layer Manager Client Library
+
+This is a simple library for interacting with a KML Layer Manager
+instance from your own client-side Python scripts.
+
+INSTALLATION
+============
+
+To install the client library, simply run:
+
+    python setup.py install
+
+from this directory.  (You may need to do this with administrator
+priveleges, e.g. via the "sudo" command on Unix-like systems.)
+This will install two things:
+
+    1. A Python library called "layermanager_client" that you can use
+      from your own Python scripts.
+
+    2. An executable script called "layermanager_download.py" that
+      you can use to download large layers from the server in bulk
+      more efficiently.
+
+This library uses the google.appengine.tools.appengine_rpc library
+that is distributed with the Google App Engine SDK.  In order for this
+library to work, the App Engine SDK will need to be available on your
+Python path.  It in turn depends on a number of other third-party
+libraries which you may install yourself but which are also
+distributed along with the App Engine SDK, so you can simply add them
+to your Python path directly if you prefer.
+
+For example, if you unpacked the SDK into /usr/local/google_appengine
+then you could add these two entries to your Python path:
+
+    /usr/local/google_appengine
+    /usr/local/google_appengine/lib
+
+The exact mechanism by which you do this is platform-dependent.
+
+Finally, the unit tests in this directory also depend on the mox
+testing library, version 0.5.2 or later, which is available here:
+    http://code.google.com/p/pymox/downloads/list
