@@ -1,3 +1,9 @@
+## __BEGIN_LICENSE__
+## Copyright (C) 2006-2010 United States Government as represented by
+## the Administrator of the National Aeronautics and Space Administration
+## All Rights Reserved.
+## __END_LICENSE__
+
 from loader_base import Observation, LayerLoader
 import sys
 sys.path.insert(0, os.path.join(os.path.split(__file__)[0], 'googlenasa_code') # should be a symlink to the googlenasa/code directory
