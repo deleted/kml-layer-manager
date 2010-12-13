@@ -87,3 +87,7 @@ class CtxLoader(LayerLoader):
 </table>
         """
     }
+
+if __name__ == "__main__":
+    loader = CtxLoader()
+    loader.load()

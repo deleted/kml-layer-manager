@@ -309,7 +309,7 @@ class LayerLoader(object):
         )
         return (schema_id, template_id)
 
-    def create(self):
+    def load(self):
         print "Creating Layer."
         self.layer = self.cms.Create('layer', name=self.layername, world=self.world, return_interface=True)
         print "Creating Schema."
