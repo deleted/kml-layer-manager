@@ -35,6 +35,11 @@ if hasattr(json, 'read') and not hasattr(json, 'loads'):
   json.loads = json.read
   json.dumps = json.write
 
+#python is soooo broken on byss...
+import socket
+if socket.gethostname().find("byss") == 0:
+    import imp
+    google = imp.load_module("google", *imp.find_module("google", ["/home/escharff/local/python"]))
 from google.appengine.tools import appengine_rpc
 
 

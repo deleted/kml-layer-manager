@@ -81,7 +81,7 @@ class Observation(object):
                 assert hasattr(property_dict, "%s_%s" % (corner, tude))
                 setattr(property_dict, "corner%d_%s" % (i+1, tude), getattr(property_dict,"%s_%s" % (corner, tude)) )
                 delattr(property_dict,"%s_%s" % (corner, tude))
-                getattr(property_dict, "_%s_properties" % tude)[getattr(property_dict, "_%s_properties" % tude).index("%s_%s" % (corner, tude)) = "corner%d_%s" % (i+1, tude)
+                getattr(property_dict, "_%s_properties" % tude)[getattr(property_dict, "_%s_properties" % tude).index("%s_%s" % (corner, tude))] = "corner%d_%s" % (i+1, tude)
             getattr(property_dict, "_%s_properties" % tude).sort()
             assert all(hasattr(property_dict, attr) for attr in "corner%d_%s" % (ii+1, tude) for ii in range(4))
             assert getattr(property_dict,  "_%s_properties" % tude) == [ "corner%d_%s" % (ii+1, tude) for ii in range(4)]
@@ -168,12 +168,12 @@ class LayerLoader(object):
         self.layer_id = None
         self.labelfile = os.path.join(metadata_path, label)
         self.tablefile = os.path.join(metadata_path, table)
-        self.cms = Layers.get_default_client()
+        self.cms = layers.get_default_client()
         
 
     def generate_observations(self, cumindex_dir=METADATA_PATH, max_observations=None):
         i = 0
-        for row in Table(self.labelfile, self.tablefile)):
+        for row in Table(self.labelfile, self.tablefile):
             try:
                 obs = Observation(row)
             except ValueError, TypeError:
@@ -230,9 +230,12 @@ class LayerLoader(object):
     def get_already_loaded_set(self):
         print "Loading successful uploads...",
         already_loaded = set()
-        with open('successful_uploads_%d.txt' % self.layer_id) as successfile:
-            for obsid in successfile:
-                already_loaded.add(obsid.strip())
+        successfilename = "successful_uploads_%d.txt" % self.layer_id
+        #with open(successfilename) as successfile:
+        successfile = open(successfilename)
+        for obsid in successfile:
+            already_loaded.add(obsid.strip())
+        successfile.close()
         print "Done. (%d observations already loaded)" % len(already_loaded)
         return already_loaded
 
@@ -249,8 +252,8 @@ class LayerLoader(object):
 # END RESUME MODE METHODS
 ####
 
-    def generate_entities(self, style_id, schema_id, template_id, exclude=[]):
-        for observation_id, obs in generate_nac_observations():
+    def generate_entities(self, style_id, schema_id, template_id, exclude=[], max_observations=None):
+        for observation_id, obs in generate_observations(max_obsevations=max_observations):
             if observation_id not in exclude:
                 geometries = obs.get_geometries()
                 schemafields = obs.schemafields
@@ -288,9 +291,9 @@ class LayerLoader(object):
                 retries -= 1
         raise Exception("Too many retries.  Giving up.")
 
-    def upload_entities(self, batchsize=200, exclude=[]):
+    def upload_entities(self, batchsize=200, exclude=[], max_observations=None):
         entities = []
-        for entity in generate_entities(self.style_id, self.schema_id, self.template_id, exclude=exclude):
+        for entity in generate_entities(self.style_id, self.schema_id, self.template_id, exclude=exclude, max_observations=max_observations):
             entities.append(entity)   
             if len(entities) >= batchsize:
                 self.try_create_entities(entities)
@@ -302,20 +305,20 @@ class LayerLoader(object):
 
     def create_schema(self):
         (schema_id, template_id) = self.cms.CreateSchema(
-            self.layer_id,
-            self.scema['name'],
+            self.layer.id,
+            self.schema['name'],
             self.schema['fields'], 
-            self.tempate,
+            [self.template],
         )
         return (schema_id, template_id)
 
-    def load(self):
+    def load(self, max_observations=None):
         print "Creating Layer."
         self.layer = self.cms.Create('layer', name=self.layername, world=self.world, return_interface=True)
         print "Creating Schema."
         self.schema_id, self.template_id = self.create_schema()
         print "Loading Observations."
         sys.stdout.flush()
-        self.upload_entities()
+        self.upload_entities(max_observations=max_observations)
         print "Done."
 
