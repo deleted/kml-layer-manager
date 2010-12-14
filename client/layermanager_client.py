@@ -40,6 +40,8 @@ import socket
 if socket.gethostname().find("byss") == 0:
     import imp
     google = imp.load_module("google", *imp.find_module("google", ["/home/escharff/local/python"]))
+    del imp
+del socket
 from google.appengine.tools import appengine_rpc
 
 

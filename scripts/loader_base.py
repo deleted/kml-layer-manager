@@ -37,12 +37,13 @@ METADATA_PATH = os.path.join(os.environ['HOME'],'data/lroc')
 
 CORNERS = tuple("corner%d"%(i+1,) for i in range(4))
 
-def all(iterator):
-    """For python2.4 compatability"""
-    for i in iterator:
-        if not i: return False
-    else:
-        return True
+if 'all' not in __builtins__.__dict__:
+    # This is here for python2.4 compatability
+    def all(iterator):
+        for i in iterator:
+            if not i: return False
+        else:
+            return True
 
 class Observation(object):
     """
