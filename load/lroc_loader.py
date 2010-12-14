@@ -48,6 +48,14 @@ class NACObservation(dict):
         r = self.get('R', None)
         return (l,r) 
 
+    def get_geometries(self):
+        geometries = []
+        geometries.append({'type': 'Point', 'fields': {'location': (self.latitude, self.longitude)}})
+        for frame in self.frames():
+            if frame:
+                geometries.append({'type':'Polygon', 'fields':{'outer_points': frame.footprint}})
+        return geometries
+
     @property
     def schemafields(self):
         schemafields = {}
