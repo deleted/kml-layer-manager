@@ -73,18 +73,18 @@ class CtxLoader(LayerLoader):
   <tr><td>
     {% if description %}<hr/>
     <h2>{{ name }}</h2>
-    {{ description|safe }}
-    <p><a href="{{ url|safe }}">Learn more...</a></p>
+    {{ description}}
+    <p><a href="{{ url}}">Learn more...</a></p>
     {% endif %}
     <hr/>
     <p>This image was taken by the <a href="http://www.msss.com/mro/ctx/">Context Camera (CTX)</a> on board NASA's <a href="http://www.nasa.gov/mission_pages/MRO/">Mars Reconnaissance Orbiter (MRO)</a> spacecraft.</p>
-    <p>See this image&rsquo;s <a href="http://viewer.mars.asu.edu/planetview/inst/ctx/{{ product_id|safe }}">ASU data page</a>.</p>
+    <p>See this image&rsquo;s <a href="http://viewer.mars.asu.edu/planetview/inst/ctx/{{ product_id}}">ASU data page</a>.</p>
     <b>Product ID:</b> {{ product_id }}<br />
     {% if rationale_desc %}<b>Image of:</b> {{ rationale_desc }}<br />{% endif %}
     <b>Location:</b> {% latlon360 latitude longitude %}<br />
     {% if image_time %}<b>Acquired on:</b> {{ image_time|date:"F j, Y" }}<br />{% endif %}
     <hr/>
-    <center>{{ credit_string|safe }}</center>
+    <center>{{ credit_string}}</center>
   </td></tr>
 </table>
         """
@@ -95,5 +95,7 @@ class CtxLoader(LayerLoader):
     }
 
 if __name__ == "__main__":
+    print "Standby..."
     loader = CtxLoader('CTX Footprints', '/data/mars/ctx')
+    loader.delete_existing_layers()
     loader.load(max_observations=200)
