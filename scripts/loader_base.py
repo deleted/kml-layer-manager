@@ -37,6 +37,13 @@ METADATA_PATH = os.path.join(os.environ['HOME'],'data/lroc')
 
 CORNERS = tuple("corner%d"%(i+1,) for i in range(4))
 
+def all(iterator):
+    """For python2.4 compatability"""
+    for i in iterator:
+        if not i: return False
+    else:
+        return True
+
 class Observation(object):
     """
     Base class for PDS Observation metadata.
@@ -111,13 +118,15 @@ class Observation(object):
 
     def get_geometries(self):
         """
-        Return a list of geometry dicts, in the format accepted by the layermanager.
+        Return a **list** of geometry dicts, in the format accepted by the layermanager.
+        (If you return a tuple, layermanager_client will cry)
         May be overridden by subclasses.
         """
-        geometries = (
+        geometries = [
             {'type': 'Point', 'fields': {'location': (self.latitude, self.longitude)}},
             {'type':'Polygon', 'fields':{'outer_points': self.footprint}},
-        )
+        ]
+        return geometries
     
 
     def _fix_latitudes(self):
@@ -127,10 +136,10 @@ class Observation(object):
             if value > 180: raise ValueError # malformed value.  This observation should be skipped.
             
     def _fix_longitudes(self):
-        for property in self.longitude_properties:
+        for property in self._longitude_properties:
             value = getattr(self, property)
             if type(value) not in (int, float): raise TypeError
-            if value > 360: raise ValueError # malformed value.  This observation should be skipped.
+            if value > 360 or value < 0: raise ValueError # malformed value.  This observation should be skipped.
             if value > 180:
                 value -= 360
                 setattr(self, property, value)
@@ -261,7 +270,8 @@ class LayerLoader(object):
 ####
 
     def generate_entities(self, style_id, schema_id, template_id, exclude=[], max_observations=None):
-        for observation_id, obs in generate_observations(max_obsevations=max_observations):
+        for obs in self.generate_observations(max_observations=max_observations):
+            observation_id = obs.observation_id
             if observation_id not in exclude:
                 geometries = obs.get_geometries()
                 schemafields = obs.schemafields
@@ -291,7 +301,7 @@ class LayerLoader(object):
         while retries > 0:
             try:
                 self.cms.BatchCreateEntities(self.layer_id, entities)
-                record_successful_entities(entities)
+                self.record_successful_entities(entities)
                 print "Done."
                 return True
             except urllib2.HTTPError, e:
@@ -309,7 +319,7 @@ class LayerLoader(object):
         else:
             self.try_create_entities(entities)
         print "Loaded %d observations."
-        print "URL: ", layer.GetLayerKMLURL()
+        print "URL: ",self. layer.GetLayerKMLURL()
 
     def create_schema(self):
         (schema_id, template_id) = self.cms.CreateSchema(
@@ -323,10 +333,11 @@ class LayerLoader(object):
     def load(self, max_observations=None):
         print "Creating Layer."
         self.layer = self.cms.Create('layer', name=self.layername, world=self.world, return_interface=True)
+        self.layer_id = self.layer.id
         print "Creating Schema."
         self.schema_id, self.template_id = self.create_schema()
-        print "Sycning Style"
-        self.style_id = self.fetch_or_create_style()
+        print "Synching Style"
+        self.style_id = self.fetch_or_create_style().id
         print "Loading Observations."
         sys.stdout.flush()
         self.upload_entities(max_observations=max_observations)

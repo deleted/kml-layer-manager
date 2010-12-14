@@ -18,14 +18,24 @@ class CtxObservation(Observation):
             "credit_string": "CREDIT STRING HERE",
             "thumb_url": self.thumb_url,
             "overlay_url": self.overlay_url,
-            "desctiption": self.description,
-            "name": self.name,
+            "description": self.description,
+            #"name": self.name,
             "url": self.url,
             "product_id": self.product_id,
-            "imagetime": self.imagetime,
+            "imagetime": self.image_time.strftime("%Y-%m-%d %H:%M:%S"),
             "longitude": self.longitude,
             "latitude": self.latitude,
         }
+
+    @property
+    def description(self):
+            return self.rationale_desc
+    @property
+    def name(self):
+        return self.observation_id
+    @property
+    def url(self):
+        return "http://viewer.mars.asu.edu/planetview/inst/ctx/" + self.product_id
 
 class CtxLoader(LayerLoader):
 
@@ -91,7 +101,7 @@ class CtxLoader(LayerLoader):
     }
     
     style = {
-
+        "name": "ctx",
     }
 
 if __name__ == "__main__":
