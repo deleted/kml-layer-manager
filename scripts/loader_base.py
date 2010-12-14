@@ -163,6 +163,14 @@ class LayerLoader(object):
         """
         raise NotImplementedError
 
+    @property
+    def style(self):
+        """
+        A sequence of dicts where keys are style properties and values are the corresponding values.
+        """
+        raise NotImplementedError
+
+
     def __init__(self, layername, metadata_path, label='CUMINDEX.LBL', table='CUMINDEX.TAB'):
         self.layername = layername
         self.layer_id = None
@@ -317,6 +325,8 @@ class LayerLoader(object):
         self.layer = self.cms.Create('layer', name=self.layername, world=self.world, return_interface=True)
         print "Creating Schema."
         self.schema_id, self.template_id = self.create_schema()
+        print "Sycning Style"
+        self.style_id = self.fetch_or_create_style()
         print "Loading Observations."
         sys.stdout.flush()
         self.upload_entities(max_observations=max_observations)

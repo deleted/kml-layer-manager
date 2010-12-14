@@ -89,6 +89,10 @@ class CtxLoader(LayerLoader):
 </table>
         """
     }
+    
+    style = {
+
+    }
 
 if __name__ == "__main__":
     loader = CtxLoader('CTX Footprints', '/data/mars/ctx')
