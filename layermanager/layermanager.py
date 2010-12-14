@@ -84,6 +84,7 @@ HANDLER_MAP = {
 }
 
 
+webapp.template.register_template_library('template_functions.kml_util')
 def main():
   debug = os.environ['SERVER_SOFTWARE'].startswith('Development')
   run_wsgi_app(webapp.WSGIApplication(HANDLER_MAP.items(), debug=debug))
