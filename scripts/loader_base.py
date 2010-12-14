@@ -301,7 +301,7 @@ class LayerLoader(object):
 
     def upload_entities(self, batchsize=200, exclude=[], max_observations=None):
         entities = []
-        for entity in generate_entities(self.style_id, self.schema_id, self.template_id, exclude=exclude, max_observations=max_observations):
+        for entity in self.generate_entities(self.style_id, self.schema_id, self.template_id, exclude=exclude, max_observations=max_observations):
             entities.append(entity)   
             if len(entities) >= batchsize:
                 self.try_create_entities(entities)
