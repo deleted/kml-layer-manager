@@ -321,7 +321,7 @@ def main():
     else:
         print "Creating layer."
         #delete_existing_layers(cms, layername)
-        layer = cms.Create('layer', name=layername, world='mars', return_interface=True)
+        layer = cms.Create('layer', name=layername, world='moon', return_interface=True)
         print "Creating Schema"
         (schema_id, template_id) = create_nac_schema(cms, layer)
         print "Loading observations."

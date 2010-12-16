@@ -67,6 +67,7 @@ class NACObservation(dict):
 
 def LrocNacLoader(LayerLoader):
 
+    world = "moon"
     layername = "LROC NAC " + date.today().strftime("%Y-%m-%d")
     
     schema = {
