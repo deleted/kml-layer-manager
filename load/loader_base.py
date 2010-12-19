@@ -147,6 +147,8 @@ class Observation(object):
 
 class LayerLoader(object):
     world = 'mars'
+    observation_class = Observation
+    layer_options = {} # Any options stored here will be based as params on layer creation
    
     @property
     def layername(self):
@@ -193,7 +195,7 @@ class LayerLoader(object):
         i = 0
         for row in Table(self.labelfile, self.tablefile):
             try:
-                obs = Observation(row)
+                obs = self.observation_class(row)
             except ValueError, TypeError:
                 # TODO: Log Me
                 continue # skip records with problematic coordinates
@@ -333,7 +335,7 @@ class LayerLoader(object):
 
     def load(self, max_observations=None):
         print "Creating Layer."
-        self.layer = self.cms.Create('layer', name=self.layername, world=self.world, return_interface=True)
+        self.layer = self.cms.Create('layer', name=self.layername, world=self.world, return_interface=True, **self.layer_options)
         self.layer_id = self.layer.id
         print "Creating Schema."
         self.schema_id, self.template_id = self.create_schema()
@@ -344,3 +346,19 @@ class LayerLoader(object):
         self.upload_entities(max_observations=max_observations)
         print "Done."
 
+
+def dispatch_cmd(context, argv):
+    '''A helper for building command-line tools.'''
+    commands = {}
+    for name, value in context.iteritems():
+        if name.startswith('cmd_') and callable(value):
+            commands[name[4:]] = value
+    if len(argv) < 2 or argv[1] not in commands:
+        if context['__doc__']:
+            print context['__doc__'] + '\n'
+        print 'Usage: ' + sys.argv[0] + ' <command>' + '\n'
+        print 'Commands: '
+        for command, func in commands.iteritems():
+            print '  %s : %s' % (command, func.__doc__)
+        sys.exit(1)
+    commands[argv[1]](*argv[2:])

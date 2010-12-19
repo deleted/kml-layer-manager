@@ -65,10 +65,24 @@ class NACObservation(dict):
                 schemafields["field_%s_product_id" % side] = obs[side[0].upper()].product_id
         return schemafields
 
-def LrocNacLoader(LayerLoader):
+class NACFootprintObservation(NACObservation):
+    def get_geometries(self):
+        geometries = []
+       for frame in self.frames():
+            if frame:
+                geometries.append({'type':'Polygon', 'fields':{'outer_points': frame.footprint}})
+        return geometries
+ 
+
+class LrocNACLoader(LayerLoader):
 
     world = "moon"
     layername = "LROC NAC " + date.today().strftime("%Y-%m-%d")
+    observation_class = NACFootprintObservation
+    layer_options = {
+        'division_lod_min': 512,
+        'division_lod_min_fade': 128,
+    }
     
     schema = {
         'name': 'nac_schema',
@@ -98,4 +112,24 @@ def LrocNacLoader(LayerLoader):
         'line_color': 'FFFFFFFF', 
     }
 
+class NACFootprintLoader(LrocNACLoader):
+    layername = "LROC NAC footprints" + date.today().strftime("%Y-%m-%d")
+    schema = None
+    template = None    
+    observation_class = NACFootprintObservation
+    layer_options = {
+        # Set to fade out just as the main footprint loader is fading in.
+        'division_lod_min': 256,
+        'division_lod_min_fade': 128,
+        'division_lod_max': 512,
+        'division_lod_max_fade': 128,
+    }
 
+def cmd_load_footprints():
+    """Just load the footprints layer (no icons or balloons) for display at high zoomlevels."""
+    loader = NACFootprintLoader()
+    loader.load()
+
+if __name__ == "__main__":
+    import sys
+    loader_base.dispatch_cmd(globals(), sys.argv)

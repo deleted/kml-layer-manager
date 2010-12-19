@@ -40,6 +40,7 @@ class CtxObservation(Observation):
 class CtxLoader(LayerLoader):
 
     layername = "CTX Footprints"
+    observation_class = CtxObservation
 
     def generate_observations(self, cumindex_dir=None, max_observations=None):
         i = 0
