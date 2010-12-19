@@ -33,11 +33,10 @@ logger = logging.getLogger()
 
 
 OUTPUT_path = 'out/'
-METADATA_PATH = os.path.join(os.environ['HOME'],'data/lroc')
 
 CORNERS = tuple("corner%d"%(i+1,) for i in range(4))
 
-if 'all' not in __builtins__.__dict__:
+if hasattr(__builtins__, "__dict__") and 'all' not in __builtins__.__dict__:
     # This is here for python2.4 compatability
     def all(iterator):
         for i in iterator:
@@ -183,18 +182,24 @@ class LayerLoader(object):
         raise NotImplementedError
 
 
-    def __init__(self, layername, metadata_path, label='CUMINDEX.LBL', table='CUMINDEX.TAB'):
-        self.layername = layername
+    def __init__(self, layername=None, metadata_path=None, label='CUMINDEX.LBL', table='CUMINDEX.TAB'):
+        if layername:
+            self.layername = layername
+        if metadata_path:
+            self.metadata_path = metadata_path
+        assert hasattr(self, 'layername')
+        assert hasattr(self, 'metadata_path')
         self.layer_id = None
-        self.labelfile = os.path.join(metadata_path, label)
-        self.tablefile = os.path.join(metadata_path, table)
+        self.labelfile = os.path.join(self.metadata_path, label)
+        self.tablefile = os.path.join(self.metadata_path, table)
         self.cms = layers.get_default_client()
         
 
-    def generate_observations(self, cumindex_dir=METADATA_PATH, max_observations=None):
+    def generate_observations(self, max_observations=None):
         i = 0
         for row in Table(self.labelfile, self.tablefile):
             try:
+                import pdb; pdb.set_trace()
                 obs = self.observation_class(row)
             except ValueError, TypeError:
                 # TODO: Log Me

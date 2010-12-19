@@ -1,9 +1,11 @@
+#!/usr/bin/env python2.6
 ## __BEGIN_LICENSE__
 ## Copyright (C) 2006-2010 United States Government as represented by
 ## the Administrator of the National Aeronautics and Space Administration
 ## All Rights Reserved.
 ## __END_LICENSE__
 
+import os
 from datetime import date
 import loader_base
 from loader_base import Observation, LayerLoader
@@ -15,6 +17,7 @@ To load LROC data, use lroc.py instead.  It does logically the same thing.
 This file was created to hold the LROC specific logic 
 when I extracted the more general-purpose loading logic from lroc.py into loader_base.py
 """
+METADATA_PATH = os.path.join(os.environ['HOME'],'data/lroc')
 
 
 class LrocNacProduct(Observation):
@@ -68,7 +71,7 @@ class NACObservation(dict):
 class NACFootprintObservation(NACObservation):
     def get_geometries(self):
         geometries = []
-       for frame in self.frames():
+        for frame in self.frames():
             if frame:
                 geometries.append({'type':'Polygon', 'fields':{'outer_points': frame.footprint}})
         return geometries
@@ -79,6 +82,7 @@ class LrocNACLoader(LayerLoader):
     world = "moon"
     layername = "LROC NAC " + date.today().strftime("%Y-%m-%d")
     observation_class = NACFootprintObservation
+    metadata_path = METADATA_PATH
     layer_options = {
         'division_lod_min': 512,
         'division_lod_min_fade': 128,
@@ -114,8 +118,7 @@ class LrocNACLoader(LayerLoader):
 
 class NACFootprintLoader(LrocNACLoader):
     layername = "LROC NAC footprints" + date.today().strftime("%Y-%m-%d")
-    schema = None
-    template = None    
+    schema = {"name": "Empty Schema", "fields": []}
     observation_class = NACFootprintObservation
     layer_options = {
         # Set to fade out just as the main footprint loader is fading in.
@@ -127,9 +130,17 @@ class NACFootprintLoader(LrocNACLoader):
 
 def cmd_load_footprints():
     """Just load the footprints layer (no icons or balloons) for display at high zoomlevels."""
-    loader = NACFootprintLoader()
+    loader = NACFootprintLoader(label="INDEX.LBL", table="INDEX.TAB")
     loader.load()
 
 if __name__ == "__main__":
     import sys
-    loader_base.dispatch_cmd(globals(), sys.argv)
+    #loader_base.dispatch_cmd(globals(), sys.argv)
+    if len(sys.argv) > 1:
+        if callable(globals().get("cmd_"+sys.argv[1], None)):
+            globals().get("cmd_"+sys.argv[1])(*sys.argv[2:])
+        else:
+            print "Command not found: ", sys.argv[1]
+    else:
+        print "Command Required"
+
