@@ -108,5 +108,4 @@ class CtxLoader(LayerLoader):
 if __name__ == "__main__":
     print "Standby..."
     loader = CtxLoader('CTX Footprints', '/data/mars/ctx')
-    loader.delete_existing_layers()
     loader.load(max_observations=200)

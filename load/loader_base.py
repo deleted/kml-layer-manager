@@ -338,7 +338,9 @@ class LayerLoader(object):
         )
         return (schema_id, template_id)
 
-    def load(self, max_observations=None):
+    def load(self, max_observations=None, delete_existing=True):
+        if delete_existing:
+            self.delete_existing_layers()
         print "Creating Layer."
         self.layer = self.cms.Create('layer', name=self.layername, world=self.world, return_interface=True, **self.layer_options)
         self.layer_id = self.layer.id
