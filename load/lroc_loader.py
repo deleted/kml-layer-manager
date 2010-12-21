@@ -38,6 +38,10 @@ class NACObservation(dict):
         Big old hack. 
         Manages two observations as one.
     '''
+
+    def __init__(self, obs_id):
+        super(dict, self).__init__()
+        self.observation_id = obs_id
     def __getattr__(self, attr):
         if 'L' in self:
             return getattr(self['L'], attr)
@@ -75,6 +79,7 @@ class NACFootprintObservation(NACObservation):
             if frame:
                 geometries.append({'type':'Polygon', 'fields':{'outer_points': frame.footprint}})
         return geometries
+
  
 
 class LrocNACLoader(LayerLoader):
@@ -115,6 +120,38 @@ class LrocNACLoader(LayerLoader):
         'line_width': 1,
         'line_color': 'FFFFFFFF', 
     }
+    
+    def generate_observations(self, max_observations=None):
+        nac_observations = {}
+        i = 0
+        for row in Table(self.labelfile, self.tablefile):
+            try:
+                obs = self.observation_class(row)
+            except ValueError, TypeError:
+                continue # skip records with problematic coordinates
+            if obs.product_id[:-2] in ('L','R'):
+                obs_id = obs.product_id[:-2]
+                if obs_id not in nac_observations:
+                    nac_observations[obs_id] = NACObservation(obs_id)
+                nac_observations[obs_id][obs.product_id[-2]] = obs  # Frame key: "L" or "R"
+                if 'L' in nac_observations[obs_id] and 'R' in nac_observations[obs_id]:
+                    yield nac_observations.pop(obs_id)
+                    i += 1
+            else:
+                # Assuming all other letters are WAC observations...
+                #wac_observations[obs.product_id[:-1]] = obs
+                pass
+            if max_observations > 0 and i >= max_observations:
+                break
+
+        else:
+            # Emit orphan frames
+            while len(nac_observations) > 0:
+                if max_observations > 0 and i > max_observations: 
+                    break
+                obs_id, obs = nac_observations.popitem()
+                yield obs
+                i += 1
 
 class NACFootprintLoader(LrocNACLoader):
     layername = "LROC NAC footprints" + date.today().strftime("%Y-%m-%d")
@@ -127,6 +164,7 @@ class NACFootprintLoader(LrocNACLoader):
         'division_lod_max': 512,
         'division_lod_max_fade': 128,
     }
+    
 
 def cmd_load_footprints():
     """Just load the footprints layer (no icons or balloons) for display at high zoomlevels."""
