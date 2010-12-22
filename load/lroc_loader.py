@@ -9,6 +9,7 @@ import os
 from datetime import date
 import loader_base
 from loader_base import Observation, LayerLoader
+from pds import Table
 
 """
 This module is completely untested and probably won't work as written.
@@ -22,7 +23,7 @@ METADATA_PATH = os.path.join(os.environ['HOME'],'data/lroc')
 
 class LrocNacProduct(Observation):
     def __init__(self, tablerow):
-       tablerow.__dict__ = Product.normalize_corner_names(tablerow.__dict__)
+       tablerow.__dict__ = Observation.normalize_corner_names(tablerow.__dict__)
        Observation.__init__(self, tablerow)
        self.observation_id = self.product_id[:-2]
 
@@ -67,9 +68,9 @@ class NACObservation(dict):
     def schemafields(self):
         schemafields = {}
         for side in ('left','right'):
-            if side[0].upper() in obs:
-                schemafields["field_%s_url" % side] = obs[side[0].upper()].url
-                schemafields["field_%s_product_id" % side] = obs[side[0].upper()].product_id
+            if side[0].upper() in self:
+                schemafields["field_%s_url" % side] = self[side[0].upper()].url
+                schemafields["field_%s_product_id" % side] = self[side[0].upper()].product_id
         return schemafields
 
 class NACFootprintObservation(NACObservation):
@@ -126,11 +127,12 @@ class LrocNACLoader(LayerLoader):
         i = 0
         for row in Table(self.labelfile, self.tablefile):
             try:
-                obs = self.observation_class(row)
+                obs = LrocNacProduct(row)
             except ValueError, TypeError:
+                print "Skipping %s.  Problematic values." % obs.observation_id
                 continue # skip records with problematic coordinates
-            if obs.product_id[:-2] in ('L','R'):
-                obs_id = obs.product_id[:-2]
+            if row.product_id[-2] in ('L','R'):
+                obs_id = row.product_id[:-2]
                 if obs_id not in nac_observations:
                     nac_observations[obs_id] = NACObservation(obs_id)
                 nac_observations[obs_id][obs.product_id[-2]] = obs  # Frame key: "L" or "R"
@@ -140,6 +142,7 @@ class LrocNACLoader(LayerLoader):
             else:
                 # Assuming all other letters are WAC observations...
                 #wac_observations[obs.product_id[:-1]] = obs
+                print "Skipping %s  Not NAC." % row.product_id
                 pass
             if max_observations > 0 and i >= max_observations:
                 break
@@ -155,7 +158,6 @@ class LrocNACLoader(LayerLoader):
 
 class NACFootprintLoader(LrocNACLoader):
     layername = "LROC NAC footprints" + date.today().strftime("%Y-%m-%d")
-    schema = {"name": "Empty Schema", "fields": []}
     observation_class = NACFootprintObservation
     layer_options = {
         # Set to fade out just as the main footprint loader is fading in.

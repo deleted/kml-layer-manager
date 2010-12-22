@@ -79,20 +79,20 @@ class Observation(object):
     @classmethod
     def normalize_corner_names(klass, property_dict):
         """ 
-        Replace upper_left. upper_right style corner property names with corner1, corner2, etc
+        Replace upper_left. upper_right style corner property names with corner1, corner2, etc.
         This is nessecary because not all PDS labels observe consistent naming.
+        It is written as a class method because it's meant to be called before initializing the object, 
+        given a dict of the initialization properties, for observation types where this is nessecary (e.g. LROC)
+        TODO: Maybe this should be just a normal instance method that gets triggered durint __init__ if necessary.
         """
 
         for tude in ('latitude','longitude'):
             for i, corner in enumerate(('upper_left','upper_right','lower_right','lower_left')):
-                assert hasattr(property_dict, "%s_%s" % (corner, tude))
-                setattr(property_dict, "corner%d_%s" % (i+1, tude), getattr(property_dict,"%s_%s" % (corner, tude)) )
-                delattr(property_dict,"%s_%s" % (corner, tude))
-                getattr(property_dict, "_%s_properties" % tude)[getattr(property_dict, "_%s_properties" % tude).index("%s_%s" % (corner, tude))] = "corner%d_%s" % (i+1, tude)
-            getattr(property_dict, "_%s_properties" % tude).sort()
-            assert all(hasattr(property_dict, attr) for attr in "corner%d_%s" % (ii+1, tude) for ii in range(4))
-            assert getattr(property_dict,  "_%s_properties" % tude) == [ "corner%d_%s" % (ii+1, tude) for ii in range(4)]
-            return property_dict
+                assert "%s_%s" % (corner, tude) in property_dict.keys()
+                property_dict["corner%d_%s" % (i+1, tude)] =  property_dict["%s_%s" % (corner, tude)]
+                del property_dict["%s_%s" % (corner, tude)]
+        assert all( attr in property_dict.keys() for attr in ("corner%d_%s" % (j+1, tude) for j in range(4)))
+        return property_dict
 
     @property
     def longitude(self):
@@ -199,7 +199,6 @@ class LayerLoader(object):
         i = 0
         for row in Table(self.labelfile, self.tablefile):
             try:
-                import pdb; pdb.set_trace()
                 obs = self.observation_class(row)
             except ValueError, TypeError:
                 # TODO: Log Me
