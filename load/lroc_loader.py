@@ -131,6 +131,8 @@ class LrocNACLoader(LayerLoader):
             except ValueError, TypeError:
                 print "Skipping %s.  Problematic values." % obs.observation_id
                 continue # skip records with problematic coordinates
+            if obs.target_name.strip() != 'MOON':
+                continue
             if row.product_id[-2] in ('L','R'):
                 obs_id = row.product_id[:-2]
                 if obs_id not in nac_observations:
