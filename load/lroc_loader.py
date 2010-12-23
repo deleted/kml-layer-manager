@@ -173,6 +173,9 @@ def cmd_load_footprints():
     loader = NACFootprintLoader(label="INDEX.LBL", table="INDEX.TAB")
     loader.load()
 
+def cmd_delete_existing(name):
+    LayerLoader._delete_layers_by_name(name)
+
 if __name__ == "__main__":
     import sys
     #loader_base.dispatch_cmd(globals(), sys.argv)

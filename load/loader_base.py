@@ -208,9 +208,10 @@ class LayerLoader(object):
             if max_observations > 0 and i >= max_observations:
                 break
 
-    def delete_existing_layers(self):
-        name = self.layername
-        cms = self.cms
+    @classmethod
+    def _delete_layers_by_name(klass, name, cms=None):
+        """ Delete all layers in the cms that exactly match a name """
+        if not cms: cms = layers.get_default_client()
         layer_ids = cms.List('layer')
         i = 0
         for lid in layer_ids:
@@ -220,6 +221,13 @@ class LayerLoader(object):
                 i += 1
         if i:
             print "Deleted %d existing layers." % i
+
+    def delete_existing_layers(self):
+        name = self.layername
+        cms = self.cms
+        self.__class__._delete_layers_by_name(self.name, cms=self.cms)
+
+        
 
     ####
     #  METHODS THAT APPLY TO RESUME MODE ONLY
