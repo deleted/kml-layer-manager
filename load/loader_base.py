@@ -225,7 +225,7 @@ class LayerLoader(object):
     def delete_existing_layers(self):
         name = self.layername
         cms = self.cms
-        self.__class__._delete_layers_by_name(self.name, cms=self.cms)
+        self.__class__._delete_layers_by_name(self.layername, cms=self.cms)
 
         
 

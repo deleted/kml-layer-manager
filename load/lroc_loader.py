@@ -45,6 +45,8 @@ class NACObservation(dict):
         super(dict, self).__init__()
         self.observation_id = obs_id
     def __getattr__(self, attr):
+        if attr in self.__dict__:
+            return object.__getattribute__(self, attr)
         if 'L' in self:
             return getattr(self['L'], attr)
         elif 'R' in self:
@@ -204,7 +206,7 @@ class NACFootprintLoader(LrocNACLoader):
 
 def cmd_load_coverage():
     """Load coverage content (both footprints and placemarks)"""
-    loader = LrocNACLoader((label="INDEX.LBL", table="INDEX.TAB")
+    loader = LrocNACLoader(label="INDEX.LBL", table="INDEX.TAB")
     loader.load()
 
 def cmd_load_footprints():
