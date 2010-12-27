@@ -10,6 +10,7 @@ from datetime import date
 import loader_base
 from loader_base import Observation, LayerLoader
 from pds import Table
+import util
 
 """
 This module is completely untested and probably won't work as written.
@@ -71,6 +72,8 @@ class NACObservation(dict):
             if side[0].upper() in self:
                 schemafields["field_%s_url" % side] = self[side[0].upper()].url
                 schemafields["field_%s_product_id" % side] = self[side[0].upper()].product_id
+        schemafields["human_location"] = util.human_location(self.latitude, self.longitude)
+        schemafields["acquired_on"] = util.human_date(self.stop_time)
         return schemafields
 
 class NACFootprintObservation(NACObservation):
@@ -101,17 +104,46 @@ class LrocNACLoader(LayerLoader):
             {'name': 'left_product_id', 'type':'string'},
             {'name': 'right_url', 'type':'string'},
             {'name': 'right_product_id', 'type':'string'},
+            {'name': 'location', 'type':'string'},
+            {'name': 'acquired_on', 'type':'string'},
         )
     }    
 
+#    template = {
+#        'name': 'nac_template',
+#        'text': """
+#        <table width="360" border="0" cellpadding="0" cellspacing="0">
+#        <tr><td>Left Frame</td><td><a href="{{ left_url }}">{{ left_product_id }}</a></td></tr>
+#        <tr><td>Right Frame</td><td><a href="{{ right_url }}">{{ right_product_id }}</a></td></tr>
+#        </table>
+#        """
+#    }
+    
     template = {
         'name': 'nac_template',
-        'text': """
+        'text': '''
         <table width="360" border="0" cellpadding="0" cellspacing="0">
-        <tr><td>Left Frame</td><td><a href="{{ left_url }}">{{ left_product_id }}</a></td></tr>
-        <tr><td>Right Frame</td><td><a href="{{ right_url }}">{{ right_product_id }}</a></td></tr>
+          <tr height="45"><td><img width="360" height="40" src="http://byss.arc.nasa.gov/moon/images/lroc_title.jpg"></td></tr>
+          <tr height="245">
+          <td align="center"><!--[ Browse image not available for this observation. ]--></td>
+         </tr>
+          
+          <tr><td>
+            
+            <hr/>
+            <p>This image was taken by the <a href="http://lroc.sese.asu.edu/">Lunar Reconnaissance Orbiter Camera (LROC)</a> on board NASA's <a href="http://lunar.gsfc.nasa.gov/">LRO</a> spacecraft.</p>
+            <p>See this image&rsquo;s ASU data pages:</p>
+            <table width="360" border="0" cellpadding="0" cellspacing="0">
+            <tr><td>Left Frame</td><td><a href="{{ left_url }}">{{ left_product_id }}</a></td></tr>
+            <tr><td>Right Frame</td><td><a href="{{ right_url }}">{{ right_product_id }}</a></td></tr>
+            </table>
+            <b>Location:</b> {{location}}<br />
+            <b>Acquired on:</b> {{acquired_on}}<br />
+            <hr/>
+            <center>Credit: <a href="http://www.nasa.gov/">NASA</a> / <a href="http://www.nasa.gov/centers/goddard/home/index.html">GSFC</a> / <a href="http://www.asu.edu/">ASU</a></center>
+          </td></tr>
         </table>
-        """
+        '''
     }
     
     style = {
@@ -169,6 +201,11 @@ class NACFootprintLoader(LrocNACLoader):
         'division_lod_max_fade': 128,
     }
     
+
+def cmd_load_coverage():
+    """Load coverage content (both footprints and placemarks)"""
+    loader = LrocNACLoader((label="INDEX.LBL", table="INDEX.TAB")
+    loader.load()
 
 def cmd_load_footprints():
     """Just load the footprints layer (no icons or balloons) for display at high zoomlevels."""
