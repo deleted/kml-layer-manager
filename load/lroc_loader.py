@@ -35,7 +35,7 @@ class LrocNacProduct(Observation):
 
 
 
-class NACObservation(dict):
+class NACObservation(object):
     ''' 
         Big old hack. 
         Manages two observations as one.
@@ -47,16 +47,16 @@ class NACObservation(dict):
     def __getattr__(self, attr):
         if attr in self.__dict__:
             return object.__getattribute__(self, attr)
-        if 'L' in self:
-            return getattr(self['L'], attr)
-        elif 'R' in self:
-            return getattr(self['R'], attr)
+        if 'L' in self.__dict__:
+            return getattr(self.L attr)
+        elif 'R' in self.__dict__:
+            return getattr(self.R, attr)
         else:
             raise AttributeError("No frames exist in this NACObservation.")
     def frames(self):
         # return((self['L'], self['R']))
-        l = self.get('L', None)
-        r = self.get('R', None)
+        l = getattr(self, L, None)
+        r = getattr(self, R, None)
         return (l,r) 
 
     def get_geometries(self):
@@ -70,10 +70,9 @@ class NACObservation(dict):
     @property
     def schemafields(self):
         schemafields = {}
-        for side in ('left','right'):
-            if side[0].upper() in self:
-                schemafields["field_%s_url" % side] = self[side[0].upper()].url
-                schemafields["field_%s_product_id" % side] = self[side[0].upper()].product_id
+            if hasattr(self, side[0].upper()):
+                schemafields["field_%s_url" % side] = getattr(self, side[0].upper()).url
+                schemafields["field_%s_product_id" % side] = getattr(self, side[0].upper()).product_id
         schemafields["human_location"] = util.human_location(self.latitude, self.longitude)
         schemafields["acquired_on"] = util.human_date(self.stop_time)
         return schemafields
@@ -171,8 +170,9 @@ class LrocNACLoader(LayerLoader):
                 obs_id = row.product_id[:-2]
                 if obs_id not in nac_observations:
                     nac_observations[obs_id] = NACObservation(obs_id)
-                nac_observations[obs_id][obs.product_id[-2]] = obs  # Frame key: "L" or "R"
+                setattr(nac_observations[obs_id],obs.product_id[-2], obs)  # Frame key: "L" or "R"
                 if 'L' in nac_observations[obs_id] and 'R' in nac_observations[obs_id]:
+                if hasattr(nac_observations[obs_id], 'L') and hasattr(nac_observations[obs_id], 'R'):
                     yield nac_observations.pop(obs_id)
                     i += 1
             else:
