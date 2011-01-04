@@ -45,17 +45,18 @@ class NACObservation(object):
         super(NACObservation, self).__init__()
         self.observation_id = obs_id
 
-    def __getattribute__(self, attr):
-        if attr in dir(self):
-            return object.__getattr__(self, attr)
-        if 'L' in self.__dict__:
-            return getattr(self.L, attr)
-        elif 'R' in self.__dict__:
-            return getattr(self.R, attr)
-        else:
-            raise AttributeError("No frames exist in this NACObservation.")
+    def __getattr__(self, attr):
+        try:
+            return self.__getattribute__(attr)
+        except AttributeError:
+            if 'L' in self.__dict__:
+                return getattr(self.L, attr)
+            elif 'R' in self.__dict__:
+                return getattr(self.R, attr)
+            else:
+                raise AttributeError("No frames exist in this NACObservation.")
+
     def frames(self):
-        # return((self['L'], self['R']))
         l = getattr(self, 'L', None)
         r = getattr(self, 'R', None)
         return (l,r) 
@@ -70,17 +71,14 @@ class NACObservation(object):
 
     @property
     def schemafields(self):
-        try:
-            schemafields = {}
-            for side in ('left','right'):
-                if hasattr(self, side[0].upper()):
-                    schemafields["field_%s_url" % side] = getattr(self, side[0].upper()).url
-                    schemafields["field_%s_product_id" % side] = getattr(self, side[0].upper()).product_id
-            schemafields["human_location"] = util.human_location(self.latitude, self.longitude)
-            schemafields["acquired_on"] = util.human_date(self.stop_time)
-            return schemafields
-        except:
-            raise AttributeError
+        schemafields = {}
+        for side in ('left','right'):
+            if hasattr(self, side[0].upper()):
+                schemafields["field_%s_url" % side] = getattr(self, side[0].upper()).url
+                schemafields["field_%s_product_id" % side] = getattr(self, side[0].upper()).product_id
+        schemafields["field_location"] = util.human_location(self.latitude, self.longitude)
+        schemafields["field_acquired_on"] = util.human_date(self.stop_time)
+        return schemafields
 
 
 class NACFootprintObservation(NACObservation):

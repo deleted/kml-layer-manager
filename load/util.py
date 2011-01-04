@@ -1,3 +1,4 @@
+from datetime import datetime
 
 def human_location(lat, lng):
     """ 
@@ -16,9 +17,11 @@ def human_location(lat, lng):
     
     return u"%3.2f&#176;%s %3.2f&#176;%s" % (lat, north_south, lng, east_west)
 
-def human_date(date_object):
+def human_date(date_string):
     """
-    Convert a datetime to a human-friendly date string.
+    Convert a datetime to a human-friendly date string, used in KML Descriptions
     e.g. February 29, 2008
     """
+    date_string = date_string.split('.')[0]
+    date_object = datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S")
     return date_object.strftime("%b %d, %Y")
